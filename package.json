@@ -8,13 +8,16 @@
     "dev": "electron . --dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["electron", "obs", "stage-control", "presentation"],
+  "keywords": [
+    "electron",
+    "obs",
+    "stage-control",
+    "presentation"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "electron": "^39.2.7",
-    "libreoffice-convert": "^1.7.0",
-    "obs-websocket-js": "^5.0.7",
-    "pptxgenjs": "^4.0.1"
+    "obs-websocket-js": "^5.0.7"
   }
 }
