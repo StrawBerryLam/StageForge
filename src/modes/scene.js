@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const config = require('../../config.json');
 
 /**
  * SceneMode - Mode B: PPT-to-Scenes
@@ -83,10 +84,10 @@ class SceneMode extends EventEmitter {
               sceneName,
               sceneItemId: itemId,
               sceneItemTransform: {
-                boundsType: 'OBS_BOUNDS_SCALE_INNER',
-                boundsWidth: 1920,
-                boundsHeight: 1080,
-                alignment: 5 // Center
+                boundsType: config.scene.defaultImageSettings.boundsType,
+                boundsWidth: config.scene.defaultImageSettings.boundsWidth,
+                boundsHeight: config.scene.defaultImageSettings.boundsHeight,
+                alignment: config.scene.defaultImageSettings.alignment
               }
             });
           }

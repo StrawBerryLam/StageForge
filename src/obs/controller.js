@@ -1,6 +1,7 @@
 const OBSWebSocket = require('obs-websocket-js').default;
 const EventEmitter = require('events');
 const path = require('path');
+const config = require('../../config.json');
 
 class OBSController extends EventEmitter {
   constructor() {
@@ -57,17 +58,18 @@ class OBSController extends EventEmitter {
   }
 
   async ensureBlackoutScene() {
+    const blackoutSceneName = config.scene.blackoutSceneName;
     try {
       // Try to get the blackout scene
-      await this.obs.call('GetSceneItemList', { sceneName: 'StageForge_Blackout' });
+      await this.obs.call('GetSceneItemList', { sceneName: blackoutSceneName });
     } catch (error) {
       // Create blackout scene if it doesn't exist
-      await this.obs.call('CreateScene', { sceneName: 'StageForge_Blackout' });
+      await this.obs.call('CreateScene', { sceneName: blackoutSceneName });
       
       // Add a black color source
       try {
         await this.obs.call('CreateInput', {
-          sceneName: 'StageForge_Blackout',
+          sceneName: blackoutSceneName,
           inputName: 'Black_Background',
           inputKind: 'color_source_v3',
           inputSettings: {
@@ -198,7 +200,7 @@ class OBSController extends EventEmitter {
       throw new Error('Not connected to OBS');
     }
 
-    await this.obs.call('SetCurrentProgramScene', { sceneName: 'StageForge_Blackout' });
+    await this.obs.call('SetCurrentProgramScene', { sceneName: config.scene.blackoutSceneName });
     this.currentSceneIndex = -1;
   }
 

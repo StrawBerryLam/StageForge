@@ -172,7 +172,9 @@ class PPTProcessor {
               id: program.id,
               name: program.name,
               createdAt: program.createdAt,
-              actCount: program.acts.length
+              actCount: program.acts ? program.acts.length : (program.slideCount || 0),
+              slideCount: program.slideCount,
+              mode: program.mode || 'renderer'
             });
           } catch (error) {
             console.error(`Error loading program ${entry.name}:`, error);
