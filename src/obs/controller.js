@@ -58,7 +58,7 @@ class OBSController extends EventEmitter {
   }
 
   async ensureBlackoutScene() {
-    const blackoutSceneName = config.scene.blackoutSceneName;
+    const blackoutSceneName = config?.scene?.blackoutSceneName || 'StageForge_Blackout';
     try {
       // Try to get the blackout scene
       await this.obs.call('GetSceneItemList', { sceneName: blackoutSceneName });
@@ -200,7 +200,8 @@ class OBSController extends EventEmitter {
       throw new Error('Not connected to OBS');
     }
 
-    await this.obs.call('SetCurrentProgramScene', { sceneName: config.scene.blackoutSceneName });
+    const blackoutSceneName = config?.scene?.blackoutSceneName || 'StageForge_Blackout';
+    await this.obs.call('SetCurrentProgramScene', { sceneName: blackoutSceneName });
     this.currentSceneIndex = -1;
   }
 
