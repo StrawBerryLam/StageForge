@@ -1,12 +1,20 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const OBSController = require('./obs/controller');
 const PPTProcessor = require('./ppt/processor');
+const LibreOfficeController = require('./libreoffice/controller');
+const RendererMode = require('./modes/renderer');
+const SceneMode = require('./modes/scene');
 
 let mainWindow;
 let obsController;
 let pptProcessor;
+let libreOfficeController;
+let rendererMode;
+let sceneMode;
+let currentMode = null;
+let currentProgram = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -37,6 +45,30 @@ app.whenReady().then(() => {
   // Initialize controllers
   obsController = new OBSController();
   pptProcessor = new PPTProcessor();
+  libreOfficeController = new LibreOfficeController();
+  
+  // Initialize mode controllers
+  rendererMode = new RendererMode(libreOfficeController, obsController);
+  sceneMode = new SceneMode(obsController);
+  
+  // Setup LibreOffice event listeners
+  libreOfficeController.on('started', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('libreoffice:started');
+    }
+  });
+  
+  libreOfficeController.on('stopped', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('libreoffice:stopped');
+    }
+  });
+  
+  libreOfficeController.on('slide-changed', (direction) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('libreoffice:slide-changed', direction);
+    }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -77,11 +109,11 @@ ipcMain.handle('obs:status', async () => {
 });
 
 // PPT Processing
-ipcMain.handle('ppt:import', async (event, filePaths) => {
+ipcMain.handle('ppt:import', async (event, filePaths, options = {}) => {
   try {
     const results = [];
     for (const filePath of filePaths) {
-      const result = await pptProcessor.processFile(filePath);
+      const result = await pptProcessor.processFile(filePath, options);
       results.push(result);
     }
     return { success: true, programs: results };
@@ -109,7 +141,18 @@ ipcMain.handle('program:load', async (event, programId) => {
   try {
     const program = await pptProcessor.loadProgram(programId);
     if (program) {
-      await obsController.createScenesForProgram(program);
+      currentProgram = program;
+      
+      // Load into appropriate mode based on program.mode
+      if (program.mode === 'renderer') {
+        currentMode = rendererMode;
+        await rendererMode.loadProgram(program);
+      } else if (program.mode === 'scene') {
+        currentMode = sceneMode;
+        if (obsController.connected) {
+          await sceneMode.loadProgram(program);
+        }
+      }
     }
     return { success: true, program };
   } catch (error) {
@@ -129,7 +172,11 @@ ipcMain.handle('program:list', async () => {
 // Scene Control
 ipcMain.handle('scene:next', async () => {
   try {
-    await obsController.nextScene();
+    if (currentMode) {
+      await currentMode.next();
+    } else {
+      throw new Error('No program loaded');
+    }
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
@@ -138,7 +185,11 @@ ipcMain.handle('scene:next', async () => {
 
 ipcMain.handle('scene:prev', async () => {
   try {
-    await obsController.prevScene();
+    if (currentMode) {
+      await currentMode.prev();
+    } else {
+      throw new Error('No program loaded');
+    }
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
@@ -147,7 +198,35 @@ ipcMain.handle('scene:prev', async () => {
 
 ipcMain.handle('scene:jump', async (event, sceneIndex) => {
   try {
-    await obsController.jumpToScene(sceneIndex);
+    if (currentMode && currentMode.jumpToScene) {
+      await currentMode.jumpToScene(sceneIndex);
+    } else {
+      throw new Error('Jump not supported in current mode');
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('scene:start', async (event, options) => {
+  try {
+    if (currentMode) {
+      await currentMode.start(options);
+    } else {
+      throw new Error('No program loaded');
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('scene:stop', async () => {
+  try {
+    if (currentMode) {
+      await currentMode.stop();
+    }
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
@@ -165,8 +244,49 @@ ipcMain.handle('scene:blackout', async () => {
 
 ipcMain.handle('scene:current', async () => {
   try {
-    const current = await obsController.getCurrentScene();
-    return { success: true, scene: current };
+    if (currentMode) {
+      const status = currentMode.getStatus();
+      return { success: true, status };
+    }
+    return { success: false, error: 'No mode active' };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Display Management
+ipcMain.handle('display:list', async () => {
+  try {
+    const displays = screen.getAllDisplays();
+    return { 
+      success: true, 
+      displays: displays.map((d, i) => ({
+        id: i,
+        label: d.label || `Display ${i + 1}`,
+        bounds: d.bounds,
+        primary: d.id === screen.getPrimaryDisplay().id
+      }))
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('display:set', async (event, displayIndex) => {
+  try {
+    libreOfficeController.setDisplay(displayIndex);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// LibreOffice Status
+ipcMain.handle('libreoffice:status', async () => {
+  try {
+    const status = libreOfficeController.getStatus();
+    const available = await libreOfficeController.checkAvailability();
+    return { success: true, status: { ...status, available } };
   } catch (error) {
     return { success: false, error: error.message };
   }

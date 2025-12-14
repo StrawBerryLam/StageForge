@@ -31,6 +31,19 @@
         <div id="programList" class="program-list">
           <div class="empty-state">No programs imported yet</div>
         </div>
+        <div class="sidebar-footer">
+          <h3>Settings</h3>
+          <div class="setting-item">
+            <label for="displaySelect">Presentation Display:</label>
+            <select id="displaySelect" class="form-input">
+              <option value="0">Primary Display</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>LibreOffice Status:</label>
+            <span id="loStatus" class="status-text">Checking...</span>
+          </div>
+        </div>
       </aside>
 
       <!-- Center - Scene Controls -->
@@ -43,9 +56,11 @@
           </div>
           
           <div class="control-buttons">
+            <button id="startBtn" class="btn btn-control" disabled>▶️ Start</button>
             <button id="prevBtn" class="btn btn-control" disabled>⬅️ Previous</button>
             <button id="blackoutBtn" class="btn btn-blackout" disabled>⚫ Blackout</button>
             <button id="nextBtn" class="btn btn-control" disabled>➡️ Next</button>
+            <button id="stopBtn" class="btn btn-control" disabled>⏹️ Stop</button>
           </div>
 
           <div class="act-list-section">
@@ -101,6 +116,31 @@
           <button type="submit" class="btn btn-primary">Connect</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Mode Selection Dialog -->
+  <div id="modeDialog" class="dialog" style="display: none;">
+    <div class="dialog-content">
+      <h2>Select Program Mode</h2>
+      <p>Choose how you want to use this PowerPoint file:</p>
+      <div class="mode-options">
+        <div class="mode-option" data-mode="renderer">
+          <h3>🎭 Renderer Mode</h3>
+          <p><strong>For:</strong> Drama, dance, rich animations, videos</p>
+          <p><strong>How:</strong> Live playback via LibreOffice</p>
+          <p><strong>Needs:</strong> LibreOffice available</p>
+        </div>
+        <div class="mode-option" data-mode="scene">
+          <h3>🎬 Scene Mode</h3>
+          <p><strong>For:</strong> Simple backgrounds, static acts</p>
+          <p><strong>How:</strong> Slides converted to OBS scenes</p>
+          <p><strong>Needs:</strong> OBS connection</p>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" id="cancelMode" class="btn">Cancel</button>
+      </div>
     </div>
   </div>
 

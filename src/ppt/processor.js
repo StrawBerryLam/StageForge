@@ -22,7 +22,7 @@ class PPTProcessor {
     }
   }
 
-  async processFile(filePath) {
+  async processFile(filePath, options = {}) {
     try {
       const fileName = path.basename(filePath, path.extname(filePath));
       const programId = this.sanitizeName(fileName);
@@ -37,14 +37,24 @@ class PPTProcessor {
       const targetPath = path.join(programDir, path.basename(filePath));
       await fs.copyFile(filePath, targetPath);
 
-      // For now, create a basic program structure
-      // In a full implementation, this would extract slides as images
+      // Determine mode: default to 'renderer' if not specified
+      // Mode can be set during import or auto-detected
+      const mode = options.mode || 'renderer';
+
+      // Extract acts (only needed for scene mode, but useful for metadata)
+      const acts = mode === 'scene' ? await this.extractActs(targetPath, slideDir) : [];
+      
+      // Get slide count (useful for both modes)
+      const slideCount = acts.length > 0 ? acts.length : await this.getSlideCount(targetPath);
+
       const program = {
         id: programId,
         name: fileName,
         filePath: targetPath,
+        mode: mode, // 'renderer' or 'scene'
         createdAt: new Date().toISOString(),
-        acts: await this.extractActs(targetPath, slideDir)
+        slideCount: slideCount,
+        acts: acts
       };
 
       // Save program metadata
@@ -55,6 +65,16 @@ class PPTProcessor {
     } catch (error) {
       throw new Error(`Failed to process PPT file: ${error.message}`);
     }
+  }
+
+  /**
+   * Get slide count from PPT file
+   * This is a placeholder - in production, you'd parse the PPT structure
+   */
+  async getSlideCount(pptPath) {
+    // Placeholder: return estimated count
+    // In a full implementation, parse PPT XML structure or use LibreOffice UNO
+    return 5; // Default placeholder
   }
 
   async extractActs(pptPath, slideDir) {
