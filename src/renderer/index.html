@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StageForge - Live Event Controller</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>🎭 StageForge</h1>
+      <div class="header-actions">
+        <div class="connection-status" id="obsStatus">
+          <span class="status-indicator"></span>
+          <span class="status-text">Not Connected</span>
+        </div>
+        <button id="connectOBS" class="btn btn-primary">Connect to OBS</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar - Programs -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Programs</h2>
+          <button id="importPPT" class="btn btn-small">+ Import PPT</button>
+        </div>
+        <div id="programList" class="program-list">
+          <div class="empty-state">No programs imported yet</div>
+        </div>
+      </aside>
+
+      <!-- Center - Scene Controls -->
+      <main class="center-panel">
+        <div class="control-section">
+          <h2>Scene Control</h2>
+          <div id="currentSceneInfo" class="current-scene-info">
+            <div class="scene-name">No program loaded</div>
+            <div class="scene-number">-</div>
+          </div>
+          
+          <div class="control-buttons">
+            <button id="prevBtn" class="btn btn-control" disabled>⬅️ Previous</button>
+            <button id="blackoutBtn" class="btn btn-blackout" disabled>⚫ Blackout</button>
+            <button id="nextBtn" class="btn btn-control" disabled>➡️ Next</button>
+          </div>
+
+          <div class="act-list-section">
+            <h3>Acts</h3>
+            <div id="actList" class="act-list">
+              <div class="empty-state">Load a program to see acts</div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right - Preview -->
+      <aside class="preview-panel">
+        <h2>Preview</h2>
+        <div id="previewArea" class="preview-area">
+          <div class="empty-state">No preview available</div>
+        </div>
+        <div id="actDetails" class="act-details">
+          <h3>Act Details</h3>
+          <div class="detail-item">
+            <label>Name:</label>
+            <span id="actName">-</span>
+          </div>
+          <div class="detail-item">
+            <label>Notes:</label>
+            <span id="actNotes">-</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <div id="statusMessage">Ready</div>
+    </footer>
+  </div>
+
+  <!-- Connection Dialog -->
+  <div id="connectionDialog" class="dialog" style="display: none;">
+    <div class="dialog-content">
+      <h2>Connect to OBS</h2>
+      <form id="connectionForm">
+        <div class="form-group">
+          <label for="obsAddress">WebSocket Address:</label>
+          <input type="text" id="obsAddress" value="ws://127.0.0.1:4455" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="obsPassword">Password (if required):</label>
+          <input type="password" id="obsPassword" class="form-input">
+        </div>
+        <div class="dialog-actions">
+          <button type="button" id="cancelConnect" class="btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
