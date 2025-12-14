@@ -37,3 +37,6 @@ temp/
 converted/
 slides/
 programs/
+
+# Test files
+test.js
