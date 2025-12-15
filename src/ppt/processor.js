@@ -128,7 +128,9 @@ class PPTProcessor {
           };
           
           // Check if this slide has an associated video
-          const videoFile = videoFiles.find(v => v.includes(`slide_${index + 1}`));
+          // Match pattern: video file contains "slide" followed by the slide number
+          const slideNumberPattern = new RegExp(`slide[_\\s-]?${index + 1}[_\\s-]?`, 'i');
+          const videoFile = videoFiles.find(v => slideNumberPattern.test(v));
           if (videoFile) {
             actData.videoPath = path.join(videoDir, videoFile);
             actData.hasVideo = true;

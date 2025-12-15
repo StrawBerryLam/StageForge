@@ -132,11 +132,17 @@ class OBSSceneFactory {
         }
       });
       
-      // Get scene items and apply transform
+      // Get scene items and find the video source by name
       const sceneItems = await this.obs.call('GetSceneItemList', { sceneName });
       if (sceneItems.sceneItems && sceneItems.sceneItems.length > 0) {
-        const itemId = sceneItems.sceneItems[0].sceneItemId;
-        await this.setImageTransform(sceneName, itemId); // Same transform logic
+        // Find the specific video source we just created
+        const videoItem = sceneItems.sceneItems.find(item => 
+          item.sourceName === inputNameFinal
+        );
+        
+        if (videoItem) {
+          await this.setImageTransform(sceneName, videoItem.sceneItemId);
+        }
       }
     } catch (err) {
       console.error('Error creating video source:', err);

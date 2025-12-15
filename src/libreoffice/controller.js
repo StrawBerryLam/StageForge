@@ -1,8 +1,12 @@
 const { spawn } = require('child_process');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 const EventEmitter = require('events');
 const path = require('path');
 const fs = require('fs').promises;
 const CONSTANTS = require('../utils/constants');
+
+const execFilePromise = promisify(execFile);
 
 /**
  * LibreOfficeController - Manages LibreOffice Impress as an external process
@@ -172,10 +176,6 @@ class LibreOfficeController extends EventEmitter {
    * Windows keyboard automation using PowerShell SendKeys
    */
   async _sendKeyWindows(key) {
-    const { execFile } = require('child_process');
-    const { promisify } = require('util');
-    const execFilePromise = promisify(execFile);
-    
     // Map keys to SendKeys format
     const keyMap = {
       'Right': '{RIGHT}',
@@ -190,7 +190,7 @@ class LibreOfficeController extends EventEmitter {
     const script = `
       Add-Type -AssemblyName System.Windows.Forms
       $wshell = New-Object -ComObject WScript.Shell
-      $wshell.AppActivate("LibreOffice Impress")
+      $wshell.AppActivate(".*Impress.*")
       Start-Sleep -Milliseconds 100
       $wshell.SendKeys("${psKey}")
     `;
@@ -206,10 +206,6 @@ class LibreOfficeController extends EventEmitter {
    * macOS keyboard automation using AppleScript
    */
   async _sendKeyMacOS(key) {
-    const { execFile } = require('child_process');
-    const { promisify } = require('util');
-    const execFilePromise = promisify(execFile);
-    
     // Map keys to AppleScript key codes
     const keyMap = {
       'Right': 'key code 124',
@@ -240,10 +236,6 @@ class LibreOfficeController extends EventEmitter {
    * Linux keyboard automation using xdotool
    */
   async _sendKeyLinux(key) {
-    const { execFile } = require('child_process');
-    const { promisify } = require('util');
-    const execFilePromise = promisify(execFile);
-    
     // Map keys to xdotool format
     const keyMap = {
       'Right': 'Right',
@@ -257,9 +249,9 @@ class LibreOfficeController extends EventEmitter {
     const xdotoolKey = keyMap[key] || key;
     
     try {
-      // First, try to focus the LibreOffice window
+      // First, try to focus the LibreOffice window (using flexible pattern)
       await execFilePromise('xdotool', [
-        'search', '--name', 'LibreOffice Impress',
+        'search', '--name', 'Impress',
         'windowactivate', '--sync'
       ], { timeout: 1000 });
       
