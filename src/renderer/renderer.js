@@ -1,5 +1,8 @@
 const { ipcRenderer } = require('electron');
 
+// Import i18n (loaded via script tag in HTML)
+// i18n is now available globally
+
 // State
 let currentProgram = null;
 let currentAct = null;
@@ -32,11 +35,17 @@ const elements = {
   modeDialog: document.getElementById('modeDialog'),
   cancelMode: document.getElementById('cancelMode'),
   displaySelect: document.getElementById('displaySelect'),
-  loStatus: document.getElementById('loStatus')
+  loStatus: document.getElementById('loStatus'),
+  languageSelect: document.getElementById('languageSelect')
 };
 
 // Initialize
 async function init() {
+  // Set language selector to current language
+  if (elements.languageSelect && window.i18n) {
+    elements.languageSelect.value = i18n.getLanguage();
+  }
+  
   await loadPrograms();
   await loadDisplays();
   await checkLibreOfficeStatus();
@@ -64,7 +73,7 @@ async function checkLibreOfficeStatus() {
   const result = await ipcRenderer.invoke('libreoffice:status');
   if (result.success) {
     libreOfficeAvailable = result.status.available;
-    elements.loStatus.textContent = libreOfficeAvailable ? '✅ Available' : '❌ Not Found';
+    elements.loStatus.textContent = libreOfficeAvailable ? i18n.t('sidebar.available') : i18n.t('sidebar.notFound');
     elements.loStatus.style.color = libreOfficeAvailable ? '#4CAF50' : '#f44336';
   }
 }
@@ -82,6 +91,17 @@ function setupEventListeners() {
   elements.blackoutBtn.addEventListener('click', handleBlackout);
   elements.cancelMode.addEventListener('click', hideModeDialog);
   elements.displaySelect.addEventListener('change', handleDisplayChange);
+  
+  // Language selector
+  if (elements.languageSelect) {
+    elements.languageSelect.addEventListener('change', async (e) => {
+      await i18n.setLanguage(e.target.value);
+      // Re-render dynamic content
+      renderProgramList();
+      updateUI();
+      await checkLibreOfficeStatus();
+    });
+  }
 
   // Mode selection
   document.querySelectorAll('.mode-option').forEach(option => {
@@ -92,26 +112,26 @@ function setupEventListeners() {
   ipcRenderer.on('obs:connected', () => {
     obsConnected = true;
     updateConnectionStatus();
-    setStatus('Connected to OBS', 'success');
+    setStatus(i18n.t('messages.connectedToOBS'), 'success');
   });
 
   ipcRenderer.on('obs:disconnected', () => {
     obsConnected = false;
     updateConnectionStatus();
-    setStatus('Disconnected from OBS', 'error');
+    setStatus(i18n.t('messages.disconnectedFromOBS'), 'error');
   });
 
   ipcRenderer.on('obs:scene-changed', (event, sceneName) => {
-    setStatus(`Scene changed: ${sceneName}`, 'info');
+    setStatus(i18n.t('messages.sceneChanged', { scene: sceneName }), 'info');
   });
   
   // Listen for LibreOffice events
   ipcRenderer.on('libreoffice:started', () => {
-    setStatus('Presentation started', 'success');
+    setStatus(i18n.t('messages.presentationStarted'), 'success');
   });
   
   ipcRenderer.on('libreoffice:stopped', () => {
-    setStatus('Presentation stopped', 'info');
+    setStatus(i18n.t('messages.presentationStopped'), 'info');
   });
   
   ipcRenderer.on('libreoffice:slide-changed', (event, direction) => {
@@ -134,7 +154,7 @@ async function handleConnect(e) {
   const address = document.getElementById('obsAddress').value;
   const password = document.getElementById('obsPassword').value;
   
-  setStatus('Connecting to OBS...', 'info');
+  setStatus(i18n.t('messages.connectingToOBS'), 'info');
   
   const result = await ipcRenderer.invoke('obs:connect', { address, password });
   
@@ -142,23 +162,23 @@ async function handleConnect(e) {
     hideConnectionDialog();
     obsConnected = true;
     updateConnectionStatus();
-    setStatus('Connected to OBS successfully', 'success');
+    setStatus(i18n.t('messages.connectedToOBS'), 'success');
   } else {
-    setStatus(`Connection failed: ${result.error}`, 'error');
-    alert(`Failed to connect: ${result.error}`);
+    setStatus(i18n.t('messages.connectionFailed', { error: result.error }), 'error');
+    alert(i18n.t('messages.failedToConnect', { error: result.error }));
   }
 }
 
 function updateConnectionStatus() {
   if (obsConnected) {
     elements.obsStatus.classList.add('connected');
-    elements.obsStatus.querySelector('.status-text').textContent = 'Connected';
-    elements.connectOBS.textContent = 'Disconnect';
+    elements.obsStatus.querySelector('.status-text').textContent = i18n.t('header.connected');
+    elements.connectOBS.textContent = i18n.t('header.disconnect');
     elements.connectOBS.onclick = handleDisconnect;
   } else {
     elements.obsStatus.classList.remove('connected');
-    elements.obsStatus.querySelector('.status-text').textContent = 'Not Connected';
-    elements.connectOBS.textContent = 'Connect to OBS';
+    elements.obsStatus.querySelector('.status-text').textContent = i18n.t('header.notConnected');
+    elements.connectOBS.textContent = i18n.t('header.connectToOBS');
     elements.connectOBS.onclick = showConnectionDialog;
   }
   updateUI();
@@ -169,7 +189,7 @@ async function handleDisconnect() {
   if (result.success) {
     obsConnected = false;
     updateConnectionStatus();
-    setStatus('Disconnected from OBS', 'info');
+    setStatus(i18n.t('messages.disconnectedFromOBS'), 'info');
   }
 }
 
@@ -184,17 +204,19 @@ async function loadPrograms() {
 
 function renderProgramList() {
   if (programs.length === 0) {
-    elements.programList.innerHTML = '<div class="empty-state">No programs imported yet</div>';
+    elements.programList.innerHTML = `<div class="empty-state" data-i18n="sidebar.noProgramsYet">${i18n.t('sidebar.noProgramsYet')}</div>`;
     return;
   }
 
   elements.programList.innerHTML = programs.map(program => {
     const modeIcon = program.mode === 'renderer' ? '🎭' : '🎬';
     const actCount = program.acts ? program.acts.length : program.slideCount || 0;
+    const modeText = i18n.t(`modes.${program.mode}`);
+    const slidesText = i18n.t('units.slides');
     return `
       <div class="program-item" data-id="${program.id}">
         <div class="program-item-name">${modeIcon} ${program.name}</div>
-        <div class="program-item-meta">${actCount} slides · ${program.mode} mode</div>
+        <div class="program-item-meta">${actCount} ${slidesText} · ${modeText} mode</div>
       </div>
     `;
   }).join('');
@@ -206,7 +228,7 @@ function renderProgramList() {
 }
 
 async function handleImportPPT() {
-  setStatus('Select PPT files to import...', 'info');
+  setStatus(i18n.t('messages.selectPPTFiles'), 'info');
   
   const selectResult = await ipcRenderer.invoke('ppt:select');
   if (!selectResult.success) {
@@ -231,16 +253,17 @@ async function handleModeSelection(mode) {
   if (!pendingImportFiles) return;
   
   hideModeDialog();
-  setStatus('Importing PPT files...', 'info');
+  setStatus(i18n.t('messages.importingPPTFiles'), 'info');
   
   const result = await ipcRenderer.invoke('ppt:import', pendingImportFiles, { mode });
   
   if (result.success) {
-    setStatus(`Imported ${result.programs.length} program(s) in ${mode} mode`, 'success');
+    const modeText = i18n.t(`modes.${mode}`);
+    setStatus(i18n.t('messages.importedProgramsInMode', { count: result.programs.length, mode: modeText }), 'success');
     await loadPrograms();
   } else {
-    setStatus(`Import failed: ${result.error}`, 'error');
-    alert(`Import failed: ${result.error}`);
+    setStatus(i18n.t('messages.importFailed', { error: result.error }), 'error');
+    alert(i18n.t('messages.importFailed', { error: result.error }));
   }
   
   pendingImportFiles = null;
@@ -249,11 +272,11 @@ async function handleModeSelection(mode) {
 async function handleDisplayChange() {
   const displayIndex = parseInt(elements.displaySelect.value);
   await ipcRenderer.invoke('display:set', displayIndex);
-  setStatus(`Display set to: ${displays[displayIndex].label}`, 'info');
+  setStatus(i18n.t('messages.displaySet', { display: displays[displayIndex].label }), 'info');
 }
 
 async function loadProgram(programId) {
-  setStatus('Loading program...', 'info');
+  setStatus(i18n.t('messages.loadingProgram'), 'info');
   
   const result = await ipcRenderer.invoke('program:load', programId);
   
@@ -269,10 +292,10 @@ async function loadProgram(programId) {
     renderActList();
     updateUI();
     
-    const modeText = currentProgram.mode === 'renderer' ? 'Renderer' : 'Scene';
-    setStatus(`Program loaded (${modeText} mode)`, 'success');
+    const modeText = i18n.t(`modes.${currentProgram.mode}`);
+    setStatus(i18n.t('messages.programLoaded', { mode: modeText }), 'success');
   } else {
-    setStatus(`Failed to load program: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.failedToLoadProgram', { error: result.error }), 'error');
   }
 }
 
@@ -283,10 +306,10 @@ async function handleStart() {
   const result = await ipcRenderer.invoke('scene:start', { display: displayIndex });
   
   if (result.success) {
-    setStatus('Presentation started', 'success');
+    setStatus(i18n.t('messages.presentationStarted'), 'success');
     updateUI();
   } else {
-    setStatus(`Start failed: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.startFailed', { error: result.error }), 'error');
   }
 }
 
@@ -294,10 +317,10 @@ async function handleStop() {
   const result = await ipcRenderer.invoke('scene:stop');
   
   if (result.success) {
-    setStatus('Presentation stopped', 'info');
+    setStatus(i18n.t('messages.presentationStopped'), 'info');
     updateUI();
   } else {
-    setStatus(`Stop failed: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.stopFailed', { error: result.error }), 'error');
   }
 }
 
@@ -326,9 +349,9 @@ async function handlePrevScene() {
   
   const result = await ipcRenderer.invoke('scene:prev');
   if (result.success) {
-    setStatus('Previous scene', 'info');
+    setStatus(i18n.t('messages.previousScene'), 'info');
   } else {
-    setStatus(`Error: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.error', { error: result.error }), 'error');
   }
 }
 
@@ -337,9 +360,9 @@ async function handleNextScene() {
   
   const result = await ipcRenderer.invoke('scene:next');
   if (result.success) {
-    setStatus('Next scene', 'info');
+    setStatus(i18n.t('messages.nextScene'), 'info');
   } else {
-    setStatus(`Error: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.error', { error: result.error }), 'error');
   }
 }
 
@@ -350,9 +373,9 @@ async function handleBlackout() {
   if (result.success) {
     currentAct = null;
     updateUI();
-    setStatus('Blackout activated', 'info');
+    setStatus(i18n.t('messages.blackoutActivated'), 'info');
   } else {
-    setStatus(`Error: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.error', { error: result.error }), 'error');
   }
 }
 
@@ -361,13 +384,13 @@ async function jumpToAct(actIndex) {
   
   const result = await ipcRenderer.invoke('scene:jump', actIndex);
   if (result.success) {
-    setStatus(`Jumped to Act ${actIndex + 1}`, 'info');
+    setStatus(i18n.t('messages.jumpedToAct', { act: actIndex + 1 }), 'info');
     if (currentProgram.acts && currentProgram.acts[actIndex]) {
       currentAct = currentProgram.acts[actIndex];
       updateUI();
     }
   } else {
-    setStatus(`Error: ${result.error}`, 'error');
+    setStatus(i18n.t('messages.error', { error: result.error }), 'error');
   }
 }
 
@@ -377,13 +400,15 @@ function updateUI() {
   if (currentProgram) {
     const sceneDiv = elements.currentSceneInfo.querySelector('.scene-name');
     const numberDiv = elements.currentSceneInfo.querySelector('.scene-number');
-    const modeText = currentProgram.mode === 'renderer' ? '🎭 Renderer' : '🎬 Scene';
+    const modeIcon = currentProgram.mode === 'renderer' ? '🎭' : '🎬';
+    const modeText = i18n.t(`modes.${currentProgram.mode}`);
+    const slidesText = i18n.t('units.slides');
     sceneDiv.textContent = currentProgram.name;
-    numberDiv.textContent = `${modeText} · ${currentProgram.slideCount || currentProgram.acts.length} slides`;
+    numberDiv.textContent = `${modeIcon} ${modeText} · ${currentProgram.slideCount || currentProgram.acts.length} ${slidesText}`;
   } else {
     const sceneDiv = elements.currentSceneInfo.querySelector('.scene-name');
     const numberDiv = elements.currentSceneInfo.querySelector('.scene-number');
-    sceneDiv.textContent = 'No program loaded';
+    sceneDiv.textContent = i18n.t('controls.noProgramLoaded');
     numberDiv.textContent = '-';
   }
 

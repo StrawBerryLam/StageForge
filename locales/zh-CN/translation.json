@@ -1,0 +1,96 @@
+{
+  "app": {
+    "title": "StageForge - 现场活动控制器"
+  },
+  "header": {
+    "title": "StageForge",
+    "notConnected": "未连接",
+    "connected": "已连接",
+    "connectToOBS": "连接到 OBS",
+    "disconnect": "断开连接"
+  },
+  "sidebar": {
+    "programs": "节目",
+    "importPPT": "+ 导入 PPT",
+    "noProgramsYet": "尚未导入节目",
+    "settings": "设置",
+    "presentationDisplay": "演示显示器：",
+    "primaryDisplay": "主显示器",
+    "libreOfficeStatus": "LibreOffice 状态：",
+    "checking": "检查中...",
+    "available": "可用",
+    "notFound": "未找到"
+  },
+  "controls": {
+    "sceneControl": "场景控制",
+    "noProgramLoaded": "未加载节目",
+    "start": "开始",
+    "stop": "停止",
+    "previous": "上一个",
+    "next": "下一个",
+    "blackout": "黑场",
+    "acts": "幕",
+    "loadProgramToSeeActs": "加载节目以查看幕"
+  },
+  "preview": {
+    "preview": "预览",
+    "noPreviewAvailable": "无可用预览",
+    "actDetails": "幕详情",
+    "name": "名称：",
+    "notes": "备注："
+  },
+  "statusBar": {
+    "ready": "就绪"
+  },
+  "dialogs": {
+    "connectToOBS": "连接到 OBS",
+    "websocketAddress": "WebSocket 地址：",
+    "password": "密码（如需要）：",
+    "cancel": "取消",
+    "connect": "连接",
+    "selectProgramMode": "选择节目模式",
+    "chooseHowToUse": "选择如何使用此 PowerPoint 文件：",
+    "rendererMode": "渲染器模式",
+    "rendererFor": "用于：戏剧、舞蹈、丰富的动画、视频",
+    "rendererHow": "方式：通过 LibreOffice 实时播放",
+    "rendererNeeds": "需要：LibreOffice 可用",
+    "sceneMode": "场景模式",
+    "sceneFor": "用于：简单背景、静态幕",
+    "sceneHow": "方式：幻灯片转换为 OBS 场景",
+    "sceneNeeds": "需要：OBS 连接"
+  },
+  "messages": {
+    "connectingToOBS": "正在连接到 OBS...",
+    "connectedToOBS": "成功连接到 OBS",
+    "connectionFailed": "连接失败：{{error}}",
+    "failedToConnect": "连接失败：{{error}}",
+    "disconnectedFromOBS": "已从 OBS 断开连接",
+    "selectPPTFiles": "选择要导入的 PPT 文件...",
+    "importingPPTFiles": "正在导入 PPT 文件...",
+    "importedPrograms": "已导入 {{count}} 个节目",
+    "importedProgramsInMode": "已在 {{mode}} 模式下导入 {{count}} 个节目",
+    "importFailed": "导入失败：{{error}}",
+    "loadingProgram": "正在加载节目...",
+    "programLoaded": "节目已加载（{{mode}} 模式）",
+    "failedToLoadProgram": "加载节目失败：{{error}}",
+    "presentationStarted": "演示已开始",
+    "startFailed": "启动失败：{{error}}",
+    "presentationStopped": "演示已停止",
+    "stopFailed": "停止失败：{{error}}",
+    "previousScene": "上一个场景",
+    "nextScene": "下一个场景",
+    "jumpedToAct": "跳转到第 {{act}} 幕",
+    "error": "错误：{{error}}",
+    "blackoutActivated": "黑场已激活",
+    "sceneChanged": "场景已更改：{{scene}}",
+    "displaySet": "显示器已设置为：{{display}}"
+  },
+  "modes": {
+    "renderer": "渲染器",
+    "scene": "场景"
+  },
+  "units": {
+    "slides": "幻灯片",
+    "acts": "幕"
+  }
+}

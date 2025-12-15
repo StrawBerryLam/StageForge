@@ -38,6 +38,17 @@ body {
   gap: 1rem;
 }
 
+.language-selector {
+  display: flex;
+  align-items: center;
+}
+
+.language-selector select {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  min-width: 120px;
+}
+
 .connection-status {
   display: flex;
   align-items: center;

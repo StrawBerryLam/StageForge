@@ -1,0 +1,96 @@
+{
+  "app": {
+    "title": "StageForge - 現場活動控制器"
+  },
+  "header": {
+    "title": "StageForge",
+    "notConnected": "未連線",
+    "connected": "已連線",
+    "connectToOBS": "連線到 OBS",
+    "disconnect": "中斷連線"
+  },
+  "sidebar": {
+    "programs": "節目",
+    "importPPT": "+ 匯入 PPT",
+    "noProgramsYet": "尚未匯入節目",
+    "settings": "設定",
+    "presentationDisplay": "簡報顯示器：",
+    "primaryDisplay": "主顯示器",
+    "libreOfficeStatus": "LibreOffice 狀態：",
+    "checking": "檢查中...",
+    "available": "可用",
+    "notFound": "未找到"
+  },
+  "controls": {
+    "sceneControl": "場景控制",
+    "noProgramLoaded": "未載入節目",
+    "start": "開始",
+    "stop": "停止",
+    "previous": "上一個",
+    "next": "下一個",
+    "blackout": "黑場",
+    "acts": "幕",
+    "loadProgramToSeeActs": "載入節目以檢視幕"
+  },
+  "preview": {
+    "preview": "預覽",
+    "noPreviewAvailable": "無可用預覽",
+    "actDetails": "幕詳情",
+    "name": "名稱：",
+    "notes": "備註："
+  },
+  "statusBar": {
+    "ready": "就緒"
+  },
+  "dialogs": {
+    "connectToOBS": "連線到 OBS",
+    "websocketAddress": "WebSocket 位址：",
+    "password": "密碼（如需要）：",
+    "cancel": "取消",
+    "connect": "連線",
+    "selectProgramMode": "選擇節目模式",
+    "chooseHowToUse": "選擇如何使用此 PowerPoint 檔案：",
+    "rendererMode": "渲染器模式",
+    "rendererFor": "用於：戲劇、舞蹈、豐富的動畫、影片",
+    "rendererHow": "方式：透過 LibreOffice 即時播放",
+    "rendererNeeds": "需要：LibreOffice 可用",
+    "sceneMode": "場景模式",
+    "sceneFor": "用於：簡單背景、靜態幕",
+    "sceneHow": "方式：投影片轉換為 OBS 場景",
+    "sceneNeeds": "需要：OBS 連線"
+  },
+  "messages": {
+    "connectingToOBS": "正在連線到 OBS...",
+    "connectedToOBS": "成功連線到 OBS",
+    "connectionFailed": "連線失敗：{{error}}",
+    "failedToConnect": "連線失敗：{{error}}",
+    "disconnectedFromOBS": "已從 OBS 中斷連線",
+    "selectPPTFiles": "選擇要匯入的 PPT 檔案...",
+    "importingPPTFiles": "正在匯入 PPT 檔案...",
+    "importedPrograms": "已匯入 {{count}} 個節目",
+    "importedProgramsInMode": "已在 {{mode}} 模式下匯入 {{count}} 個節目",
+    "importFailed": "匯入失敗：{{error}}",
+    "loadingProgram": "正在載入節目...",
+    "programLoaded": "節目已載入（{{mode}} 模式）",
+    "failedToLoadProgram": "載入節目失敗：{{error}}",
+    "presentationStarted": "簡報已開始",
+    "startFailed": "啟動失敗：{{error}}",
+    "presentationStopped": "簡報已停止",
+    "stopFailed": "停止失敗：{{error}}",
+    "previousScene": "上一個場景",
+    "nextScene": "下一個場景",
+    "jumpedToAct": "跳轉到第 {{act}} 幕",
+    "error": "錯誤：{{error}}",
+    "blackoutActivated": "黑場已啟動",
+    "sceneChanged": "場景已變更：{{scene}}",
+    "displaySet": "顯示器已設定為：{{display}}"
+  },
+  "modes": {
+    "renderer": "渲染器",
+    "scene": "場景"
+  },
+  "units": {
+    "slides": "投影片",
+    "acts": "幕"
+  }
+}
