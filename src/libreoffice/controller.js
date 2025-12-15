@@ -139,29 +139,136 @@ class LibreOfficeController extends EventEmitter {
 
   /**
    * Send keyboard command to LibreOffice
-   * Fallback method when UNO API is not available
+   * Platform-specific implementation for keyboard automation
    */
   async sendKey(key) {
     if (!this.isRunning || !this.process) {
       throw new Error('LibreOffice is not running');
     }
-
-    // This is a simplified approach
-    // In production, you'd use platform-specific automation:
-    // - Windows: SendKeys or AutoHotkey
-    // - macOS: AppleScript/CGEvents
-    // - Linux: xdotool
     
     const keyToSend = CONSTANTS.KEYS[key.toUpperCase()] || key;
-
-    console.log(`Should send key: ${keyToSend} to LibreOffice`);
-    this.emit('key-sent', key);
+    console.log(`Sending key: ${keyToSend} to LibreOffice`);
     
-    // TODO: Implement actual keyboard automation
-    // This would require platform-specific libraries like:
-    // - robotjs (cross-platform)
-    // - nut.js (cross-platform)
-    // - platform-specific tools
+    // Platform-specific keyboard automation
+    try {
+      if (process.platform === 'win32') {
+        await this._sendKeyWindows(keyToSend);
+      } else if (process.platform === 'darwin') {
+        await this._sendKeyMacOS(keyToSend);
+      } else if (process.platform === 'linux') {
+        await this._sendKeyLinux(keyToSend);
+      } else {
+        console.warn('Keyboard automation not supported on this platform');
+      }
+      
+      this.emit('key-sent', key);
+    } catch (error) {
+      console.error('Error sending key:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Windows keyboard automation using PowerShell SendKeys
+   */
+  async _sendKeyWindows(key) {
+    const { execFile } = require('child_process');
+    const { promisify } = require('util');
+    const execFilePromise = promisify(execFile);
+    
+    // Map keys to SendKeys format
+    const keyMap = {
+      'Right': '{RIGHT}',
+      'Left': '{LEFT}',
+      'Home': '{HOME}',
+      'End': '{END}',
+      'Escape': '{ESC}',
+      'F5': '{F5}'
+    };
+    
+    const psKey = keyMap[key] || key;
+    const script = `
+      Add-Type -AssemblyName System.Windows.Forms
+      $wshell = New-Object -ComObject WScript.Shell
+      $wshell.AppActivate("LibreOffice Impress")
+      Start-Sleep -Milliseconds 100
+      $wshell.SendKeys("${psKey}")
+    `;
+    
+    try {
+      await execFilePromise('powershell.exe', ['-Command', script], { timeout: 2000 });
+    } catch (error) {
+      console.error('PowerShell SendKeys failed:', error.message);
+    }
+  }
+
+  /**
+   * macOS keyboard automation using AppleScript
+   */
+  async _sendKeyMacOS(key) {
+    const { execFile } = require('child_process');
+    const { promisify } = require('util');
+    const execFilePromise = promisify(execFile);
+    
+    // Map keys to AppleScript key codes
+    const keyMap = {
+      'Right': 'key code 124',
+      'Left': 'key code 123',
+      'Home': 'key code 115',
+      'End': 'key code 119',
+      'Escape': 'key code 53',
+      'F5': 'key code 96'
+    };
+    
+    const appleScriptKey = keyMap[key] || `keystroke "${key}"`;
+    const script = `
+      tell application "System Events"
+        tell process "soffice"
+          ${appleScriptKey}
+        end tell
+      end tell
+    `;
+    
+    try {
+      await execFilePromise('osascript', ['-e', script], { timeout: 2000 });
+    } catch (error) {
+      console.error('AppleScript failed:', error.message);
+    }
+  }
+
+  /**
+   * Linux keyboard automation using xdotool
+   */
+  async _sendKeyLinux(key) {
+    const { execFile } = require('child_process');
+    const { promisify } = require('util');
+    const execFilePromise = promisify(execFile);
+    
+    // Map keys to xdotool format
+    const keyMap = {
+      'Right': 'Right',
+      'Left': 'Left',
+      'Home': 'Home',
+      'End': 'End',
+      'Escape': 'Escape',
+      'F5': 'F5'
+    };
+    
+    const xdotoolKey = keyMap[key] || key;
+    
+    try {
+      // First, try to focus the LibreOffice window
+      await execFilePromise('xdotool', [
+        'search', '--name', 'LibreOffice Impress',
+        'windowactivate', '--sync'
+      ], { timeout: 1000 });
+      
+      // Then send the key
+      await execFilePromise('xdotool', ['key', xdotoolKey], { timeout: 1000 });
+    } catch (error) {
+      console.error('xdotool failed:', error.message);
+      console.log('Make sure xdotool is installed: sudo apt-get install xdotool');
+    }
   }
 
   /**

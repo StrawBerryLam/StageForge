@@ -62,11 +62,24 @@ class SceneMode extends EventEmitter {
           await this.sceneFactory.addImageSource(sceneName, act.imagePath);
         }
         
-        this.scenes.push({
+        const sceneData = {
           name: sceneName,
           actIndex: i,
           actName: act.name
-        });
+        };
+        
+        // If act has video, create a subscene for it
+        if (act.hasVideo && act.videoPath) {
+          const videoSubsceneName = await this.sceneFactory.createVideoSubscene(
+            sceneName, 
+            act.videoPath, 
+            0
+          );
+          sceneData.videoSubscene = videoSubsceneName;
+          sceneData.hasVideo = true;
+        }
+        
+        this.scenes.push(sceneData);
         
       } catch (error) {
         console.error(`Error creating scene for act ${i}:`, error);

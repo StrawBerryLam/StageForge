@@ -42,6 +42,7 @@ module.exports = {
   // File extensions
   EXTENSIONS: {
     IMAGE: /\.(png|jpg|jpeg)$/i,
+    VIDEO: /\.(mp4|avi|mov|mkv|webm)$/i,
     PRESENTATION: /\.(ppt|pptx|odp)$/i,
   },
   
@@ -56,5 +57,6 @@ module.exports = {
     DATA: 'data',
     PROGRAMS: 'programs',
     SLIDES: 'slides',
+    VIDEOS: 'videos',
   },
 };

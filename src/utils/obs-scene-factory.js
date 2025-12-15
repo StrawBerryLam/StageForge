@@ -114,6 +114,53 @@ class OBSSceneFactory {
   }
 
   /**
+   * Add video source (media source)
+   */
+  async addVideoSource(sceneName, videoPath, inputName = null) {
+    const inputNameFinal = inputName || `${sceneName}_Video`;
+    
+    try {
+      await this.obs.call('CreateInput', {
+        sceneName,
+        inputName: inputNameFinal,
+        inputKind: 'ffmpeg_source',
+        inputSettings: {
+          local_file: videoPath,
+          looping: false,
+          restart_on_activate: true,
+          clear_on_media_end: false
+        }
+      });
+      
+      // Get scene items and apply transform
+      const sceneItems = await this.obs.call('GetSceneItemList', { sceneName });
+      if (sceneItems.sceneItems && sceneItems.sceneItems.length > 0) {
+        const itemId = sceneItems.sceneItems[0].sceneItemId;
+        await this.setImageTransform(sceneName, itemId); // Same transform logic
+      }
+    } catch (err) {
+      console.error('Error creating video source:', err);
+    }
+    
+    return inputNameFinal;
+  }
+
+  /**
+   * Create a subscene for video playback
+   */
+  async createVideoSubscene(parentSceneName, videoPath, subsceneIndex = 0) {
+    const subsceneName = `${parentSceneName}_Video${subsceneIndex + 1}`;
+    
+    // Create subscene
+    await this.createScene(subsceneName);
+    
+    // Add video to subscene
+    await this.addVideoSource(subsceneName, videoPath);
+    
+    return subsceneName;
+  }
+
+  /**
    * Switch to a scene
    */
   async switchToScene(sceneName) {

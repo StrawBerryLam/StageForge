@@ -11,6 +11,7 @@ class PPTProcessor {
     this.dataDir = path.join(__dirname, '../../', CONSTANTS.PATHS.DATA);
     this.programsDir = path.join(this.dataDir, CONSTANTS.PATHS.PROGRAMS);
     this.slidesDir = path.join(this.dataDir, CONSTANTS.PATHS.SLIDES);
+    this.videosDir = path.join(this.dataDir, CONSTANTS.PATHS.VIDEOS);
     this._ensureDirectories();
   }
 
@@ -19,7 +20,8 @@ class PPTProcessor {
       await Promise.all([
         fs.mkdir(this.dataDir, { recursive: true }),
         fs.mkdir(this.programsDir, { recursive: true }),
-        fs.mkdir(this.slidesDir, { recursive: true })
+        fs.mkdir(this.slidesDir, { recursive: true }),
+        fs.mkdir(this.videosDir, { recursive: true })
       ]);
     } catch (error) {
       console.error('Error creating directories:', error);
@@ -32,11 +34,13 @@ class PPTProcessor {
       const programId = this._sanitizeName(fileName);
       const programDir = path.join(this.programsDir, programId);
       const slideDir = path.join(this.slidesDir, programId);
+      const videoDir = path.join(this.videosDir, programId);
 
       // Create directories for this program
       await Promise.all([
         fs.mkdir(programDir, { recursive: true }),
-        fs.mkdir(slideDir, { recursive: true })
+        fs.mkdir(slideDir, { recursive: true }),
+        fs.mkdir(videoDir, { recursive: true })
       ]);
 
       // Copy PPT file to program directory
@@ -48,7 +52,7 @@ class PPTProcessor {
 
       // Extract acts (only needed for scene mode, but useful for metadata)
       const acts = mode === CONSTANTS.MODES.SCENE 
-        ? await this._extractActs(targetPath, slideDir) 
+        ? await this._extractActs(targetPath, slideDir, videoDir) 
         : [];
       
       // Get slide count (useful for both modes)
@@ -84,12 +88,13 @@ class PPTProcessor {
     return 5; // Default placeholder
   }
 
-  async _extractActs(pptPath, slideDir) {
+  async _extractActs(pptPath, slideDir, videoDir) {
     // This is a simplified implementation
     // In a real implementation, you would:
     // 1. Use LibreOffice or similar to convert PPT to images
     // 2. Extract slide notes/metadata for act information
     // 3. Generate thumbnails
+    // 4. Extract embedded videos
     
     const acts = [];
     
@@ -98,17 +103,38 @@ class PPTProcessor {
       const converted = await this._convertWithLibreOffice(pptPath, slideDir);
       
       if (converted) {
+        // Extract videos from PPT if any
+        await this._extractVideos(pptPath, videoDir);
+        
         // List generated images
         const files = await fs.readdir(slideDir);
         const imageFiles = files.filter(f => CONSTANTS.EXTENSIONS.IMAGE.test(f));
         
+        // Check for extracted videos
+        let videoFiles = [];
+        try {
+          const vFiles = await fs.readdir(videoDir);
+          videoFiles = vFiles.filter(f => CONSTANTS.EXTENSIONS.VIDEO.test(f));
+        } catch (err) {
+          // No videos directory or no videos
+        }
+        
         imageFiles.sort().forEach((file, index) => {
-          acts.push({
+          const actData = {
             index: index,
             name: `Act ${index + 1}`,
             imagePath: path.join(slideDir, file),
             notes: ''
-          });
+          };
+          
+          // Check if this slide has an associated video
+          const videoFile = videoFiles.find(v => v.includes(`slide_${index + 1}`));
+          if (videoFile) {
+            actData.videoPath = path.join(videoDir, videoFile);
+            actData.hasVideo = true;
+          }
+          
+          acts.push(actData);
         });
       }
     } catch (error) {
@@ -153,6 +179,37 @@ class PPTProcessor {
     return process.platform === 'win32' 
       ? 'C:\\Program Files\\LibreOffice\\program\\soffice.exe'
       : '/usr/bin/soffice';
+  }
+
+  /**
+   * Extract videos from PPT file
+   * This is a placeholder implementation
+   * In production, you'd extract embedded videos from the PPT XML structure
+   */
+  async _extractVideos(pptPath, videoDir) {
+    try {
+      // Placeholder: In a real implementation, you would:
+      // 1. Unzip the PPTX file (it's a ZIP archive)
+      // 2. Navigate to ppt/media/ directory
+      // 3. Copy video files to videoDir
+      // 4. Rename them to match slide numbers
+      
+      // For now, this is a no-op placeholder
+      console.log('Video extraction would happen here for:', pptPath);
+      
+      // Example of how it would work:
+      // const AdmZip = require('adm-zip');
+      // const zip = new AdmZip(pptPath);
+      // const entries = zip.getEntries();
+      // for (const entry of entries) {
+      //   if (entry.entryName.startsWith('ppt/media/') && CONSTANTS.EXTENSIONS.VIDEO.test(entry.entryName)) {
+      //     const videoName = path.basename(entry.entryName);
+      //     zip.extractEntryTo(entry, videoDir, false, true);
+      //   }
+      // }
+    } catch (error) {
+      console.log('Video extraction not available:', error.message);
+    }
   }
 
   async loadProgram(programId) {

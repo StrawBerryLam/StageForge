@@ -48,9 +48,14 @@ In future versions, speaker notes will be extracted as act descriptions. To prep
 
 ❌ **Don't:**
 - Use too many animations (they won't convert)
-- Add videos (not supported yet)
 - Use very small text
 - Overcrowd slides with content
+
+✅ **Video Support:**
+- Videos are supported in Scene Mode
+- Embedded videos are automatically extracted
+- Each video is placed in a dedicated subscene
+- Video playback controlled via OBS
 
 ### File Organization
 - Keep all related PPTs in one folder

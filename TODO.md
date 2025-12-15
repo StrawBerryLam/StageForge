@@ -1,21 +1,58 @@
 # StageForge - Future Improvements
 
+# StageForge - Future Improvements
+
 ## High Priority
 
 ### 1. Platform-Specific Keyboard Automation
-**Status**: TODO  
+**Status**: ✅ COMPLETED  
 **Impact**: High - Required for Renderer mode to work properly
 
-Current implementation logs keyboard commands but doesn't send them to LibreOffice.
-
-**Implementation Options**:
-- **Windows**: Use SendKeys API or AutoHotkey integration
-- **macOS**: AppleScript or CGEvents
+Implemented platform-specific keyboard automation for controlling LibreOffice:
+- **Windows**: PowerShell SendKeys API
+- **macOS**: AppleScript with key codes
 - **Linux**: xdotool integration
-- **Cross-platform**: robotjs or nut.js library
 
-**Files to Update**:
-- `src/libreoffice/controller.js` - `sendKey()` method
+**Files Updated**:
+- `src/libreoffice/controller.js` - `sendKey()`, `_sendKeyWindows()`, `_sendKeyMacOS()`, `_sendKeyLinux()` methods
+
+**Notes**:
+- Windows: Uses PowerShell COM objects for window activation and SendKeys
+- macOS: Uses osascript with AppleScript to send key codes to soffice process
+- Linux: Requires xdotool to be installed (`sudo apt-get install xdotool`)
+- All implementations include error handling and timeout protection
+
+### 2. Video Support in Scene Mode
+**Status**: ✅ COMPLETED  
+**Impact**: High - Enables multimedia presentations
+
+Implemented video extraction and subscene creation:
+- Videos automatically extracted from PPT files
+- Each video placed in dedicated OBS subscene
+- Video playback controlled via OBS media source
+- Supports mp4, avi, mov, mkv, webm formats
+
+**Files Updated**:
+- `src/ppt/processor.js` - `_extractVideos()` method, video directory creation
+- `src/utils/obs-scene-factory.js` - `addVideoSource()`, `createVideoSubscene()` methods
+- `src/modes/scene.js` - Video subscene integration
+- `src/utils/constants.js` - Added VIDEO extensions and VIDEOS path
+- `TEMPLATE_GUIDE.md` - Updated video documentation
+
+**Implementation**:
+- Videos extracted from ppt/media/ directory in PPTX files
+- Subscenes named as `{SceneName}_Video{N}`
+- Media sources configured with restart on activate
+- Transform settings applied for proper scaling
+
+### 3. Chinese Simplified User Guide
+**Status**: ✅ COMPLETED  
+**Impact**: Medium - Improves accessibility for Chinese users
+
+Created complete Simplified Chinese translation of user guide:
+- `USER_GUIDE.zh-CN.md` - Full translation with 3000+ characters
+- All sections translated including Quick Start, Features, Workflow, Tips
+- Maintains same structure as English version for consistency
 
 ### 2. LibreOffice UNO API Integration
 **Status**: TODO  
