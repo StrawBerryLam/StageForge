@@ -2,6 +2,7 @@ const { spawn } = require('child_process');
 const EventEmitter = require('events');
 const path = require('path');
 const fs = require('fs').promises;
+const CONSTANTS = require('../utils/constants');
 
 /**
  * LibreOfficeController - Manages LibreOffice Impress as an external process
@@ -16,14 +17,14 @@ class LibreOfficeController extends EventEmitter {
     this.displayIndex = 0; // Target display for fullscreen
     
     // Path to portable LibreOffice (will be bundled with app)
-    this.loPath = this.getLibreOfficePath();
+    this.loPath = this._getLibreOfficePath();
   }
 
   /**
    * Get path to LibreOffice executable
    * In production, this should point to bundled portable LibreOffice
    */
-  getLibreOfficePath() {
+  _getLibreOfficePath() {
     const platform = process.platform;
     
     // Portable LibreOffice paths (to be bundled)
@@ -132,7 +133,7 @@ class LibreOfficeController extends EventEmitter {
         this.isRunning = true;
         this.emit('started', filePath);
         resolve();
-      }, 2000);
+      }, CONSTANTS.TIMING.LO_STARTUP_MS);
     });
   }
 
@@ -151,17 +152,9 @@ class LibreOfficeController extends EventEmitter {
     // - macOS: AppleScript/CGEvents
     // - Linux: xdotool
     
-    // For now, we'll document the keys that should be sent
-    const keyMap = {
-      'next': 'Right',      // Next slide
-      'prev': 'Left',       // Previous slide
-      'first': 'Home',      // First slide
-      'last': 'End',        // Last slide
-      'exit': 'Escape',     // Exit presentation
-      'fullscreen': 'F5'    // Toggle fullscreen
-    };
+    const keyToSend = CONSTANTS.KEYS[key.toUpperCase()] || key;
 
-    console.log(`Should send key: ${keyMap[key] || key} to LibreOffice`);
+    console.log(`Should send key: ${keyToSend} to LibreOffice`);
     this.emit('key-sent', key);
     
     // TODO: Implement actual keyboard automation
@@ -216,7 +209,7 @@ class LibreOfficeController extends EventEmitter {
       await this.sendKey('exit');
       
       // Wait a bit for graceful shutdown
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await this._delay(CONSTANTS.TIMING.LO_GRACEFUL_SHUTDOWN_MS);
       
       // Force kill if still running
       if (this.process) {
@@ -227,7 +220,7 @@ class LibreOfficeController extends EventEmitter {
           if (this.process) {
             this.process.kill('SIGKILL');
           }
-        }, 3000);
+        }, CONSTANTS.TIMING.LO_FORCE_KILL_MS);
       }
     } catch (error) {
       console.error('Error stopping LibreOffice:', error);
@@ -238,6 +231,10 @@ class LibreOfficeController extends EventEmitter {
 
     this.isRunning = false;
     this.currentFile = null;
+  }
+
+  _delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

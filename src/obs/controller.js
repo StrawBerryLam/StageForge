@@ -1,7 +1,8 @@
 const OBSWebSocket = require('obs-websocket-js').default;
 const EventEmitter = require('events');
-const path = require('path');
 const config = require('../../config.json');
+const CONSTANTS = require('../utils/constants');
+const OBSSceneFactory = require('../utils/obs-scene-factory');
 
 class OBSController extends EventEmitter {
   constructor() {
@@ -11,8 +12,12 @@ class OBSController extends EventEmitter {
     this.currentProgram = null;
     this.currentSceneIndex = -1;
     this.scenes = [];
+    this.sceneFactory = null;
     
-    // Set up event listeners
+    this._setupEventListeners();
+  }
+
+  _setupEventListeners() {
     this.obs.on('ConnectionClosed', () => {
       this.connected = false;
       this.emit('disconnected');
@@ -23,12 +28,16 @@ class OBSController extends EventEmitter {
     });
   }
 
-  async connect(config = {}) {
-    const { address = 'ws://127.0.0.1:4455', password = '' } = config;
+  async connect(connectionConfig = {}) {
+    const { 
+      address = CONSTANTS.OBS.DEFAULT_ADDRESS, 
+      password = CONSTANTS.OBS.DEFAULT_PASSWORD 
+    } = connectionConfig;
     
     try {
       await this.obs.connect(address, password);
       this.connected = true;
+      this.sceneFactory = new OBSSceneFactory(this.obs, config);
       this.emit('connected');
       
       // Ensure blackout scene exists
@@ -58,29 +67,11 @@ class OBSController extends EventEmitter {
   }
 
   async ensureBlackoutScene() {
-    const blackoutSceneName = config?.scene?.blackoutSceneName || 'StageForge_Blackout';
-    try {
-      // Try to get the blackout scene
-      await this.obs.call('GetSceneItemList', { sceneName: blackoutSceneName });
-    } catch (error) {
-      // Create blackout scene if it doesn't exist
-      await this.obs.call('CreateScene', { sceneName: blackoutSceneName });
-      
-      // Add a black color source
-      try {
-        await this.obs.call('CreateInput', {
-          sceneName: blackoutSceneName,
-          inputName: 'Black_Background',
-          inputKind: 'color_source_v3',
-          inputSettings: {
-            color: 0xFF000000,
-            width: 1920,
-            height: 1080
-          }
-        });
-      } catch (err) {
-        console.error('Error creating black background:', err);
-      }
+    const blackoutSceneName = config?.scene?.blackoutSceneName || CONSTANTS.BLACKOUT_SCENE;
+    
+    if (!await this.sceneFactory.sceneExists(blackoutSceneName)) {
+      await this.sceneFactory.createScene(blackoutSceneName);
+      await this.sceneFactory.addColorSource(blackoutSceneName, CONSTANTS.OBS.BLACK_COLOR, 'Black_Background');
     }
   }
 
@@ -96,49 +87,14 @@ class OBSController extends EventEmitter {
     // Create a scene for each act/slide
     for (let i = 0; i < program.acts.length; i++) {
       const act = program.acts[i];
-      const sceneName = `SF_${program.name}_Act${i + 1}`;
+      const sceneName = `${CONSTANTS.SCENE_PREFIX}${program.name}${CONSTANTS.ACT_PREFIX}${i + 1}`;
       
       try {
-        // Try to remove existing scene if it exists
-        try {
-          await this.obs.call('RemoveScene', { sceneName });
-        } catch (err) {
-          // Scene doesn't exist, that's fine
-        }
-        
-        // Create new scene
-        await this.obs.call('CreateScene', { sceneName });
+        await this.sceneFactory.createScene(sceneName);
         
         // Add image source if available
         if (act.imagePath) {
-          const inputName = `${sceneName}_Image`;
-          
-          await this.obs.call('CreateInput', {
-            sceneName,
-            inputName,
-            inputKind: 'image_source',
-            inputSettings: {
-              file: act.imagePath
-            }
-          });
-          
-          // Get scene item to set transform
-          const sceneItems = await this.obs.call('GetSceneItemList', { sceneName });
-          if (sceneItems.sceneItems && sceneItems.sceneItems.length > 0) {
-            const itemId = sceneItems.sceneItems[0].sceneItemId;
-            
-            // Set transform to fit/fill
-            await this.obs.call('SetSceneItemTransform', {
-              sceneName,
-              sceneItemId: itemId,
-              sceneItemTransform: {
-                boundsType: 'OBS_BOUNDS_SCALE_INNER',
-                boundsWidth: 1920,
-                boundsHeight: 1080,
-                alignment: 5 // Center
-              }
-            });
-          }
+          await this.sceneFactory.addImageSource(sceneName, act.imagePath);
         }
         
         this.scenes.push({
@@ -162,34 +118,23 @@ class OBSController extends EventEmitter {
   }
 
   async nextScene() {
-    if (!this.connected || this.scenes.length === 0) {
-      throw new Error('No program loaded or not connected');
-    }
-
+    this._validateProgramLoaded();
     const nextIndex = Math.min(this.currentSceneIndex + 1, this.scenes.length - 1);
     await this.jumpToScene(nextIndex);
   }
 
   async prevScene() {
-    if (!this.connected || this.scenes.length === 0) {
-      throw new Error('No program loaded or not connected');
-    }
-
+    this._validateProgramLoaded();
     const prevIndex = Math.max(this.currentSceneIndex - 1, 0);
     await this.jumpToScene(prevIndex);
   }
 
   async jumpToScene(sceneIndex) {
-    if (!this.connected || this.scenes.length === 0) {
-      throw new Error('No program loaded or not connected');
-    }
-
-    if (sceneIndex < 0 || sceneIndex >= this.scenes.length) {
-      throw new Error('Invalid scene index');
-    }
+    this._validateProgramLoaded();
+    this._validateSceneIndex(sceneIndex);
 
     const scene = this.scenes[sceneIndex];
-    await this.obs.call('SetCurrentProgramScene', { sceneName: scene.name });
+    await this.sceneFactory.switchToScene(scene.name);
     this.currentSceneIndex = sceneIndex;
     
     return scene;
@@ -200,8 +145,8 @@ class OBSController extends EventEmitter {
       throw new Error('Not connected to OBS');
     }
 
-    const blackoutSceneName = config?.scene?.blackoutSceneName || 'StageForge_Blackout';
-    await this.obs.call('SetCurrentProgramScene', { sceneName: blackoutSceneName });
+    const blackoutSceneName = config?.scene?.blackoutSceneName || CONSTANTS.BLACKOUT_SCENE;
+    await this.sceneFactory.switchToScene(blackoutSceneName);
     this.currentSceneIndex = -1;
   }
 
@@ -215,6 +160,18 @@ class OBSController extends EventEmitter {
       name: response.sceneName,
       index: this.currentSceneIndex
     };
+  }
+
+  _validateProgramLoaded() {
+    if (!this.connected || this.scenes.length === 0) {
+      throw new Error('No program loaded or not connected');
+    }
+  }
+
+  _validateSceneIndex(sceneIndex) {
+    if (sceneIndex < 0 || sceneIndex >= this.scenes.length) {
+      throw new Error('Invalid scene index');
+    }
   }
 }
 

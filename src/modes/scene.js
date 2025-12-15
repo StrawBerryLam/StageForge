@@ -1,4 +1,6 @@
 const EventEmitter = require('events');
+const CONSTANTS = require('../utils/constants');
+const OBSSceneFactory = require('../utils/obs-scene-factory');
 const config = require('../../config.json');
 
 /**
@@ -9,6 +11,7 @@ class SceneMode extends EventEmitter {
   constructor(obsController) {
     super();
     this.obs = obsController;
+    this.sceneFactory = null;
     this.currentProgram = null;
     this.currentSceneIndex = -1;
     this.scenes = [];
@@ -28,7 +31,8 @@ class SceneMode extends EventEmitter {
 
     // Create OBS scenes from program acts
     if (this.obs && this.obs.connected) {
-      await this.createScenes(program);
+      this.sceneFactory = new OBSSceneFactory(this.obs.obs, config);
+      await this._createScenes(program);
     }
 
     this.emit('program-loaded', program);
@@ -38,7 +42,7 @@ class SceneMode extends EventEmitter {
   /**
    * Create OBS scenes from program slides/acts
    */
-  async createScenes(program) {
+  async _createScenes(program) {
     if (!this.obs || !this.obs.connected) {
       throw new Error('Not connected to OBS');
     }
@@ -48,49 +52,14 @@ class SceneMode extends EventEmitter {
     // Create a scene for each act/slide
     for (let i = 0; i < program.acts.length; i++) {
       const act = program.acts[i];
-      const sceneName = `SF_${program.id}_Act${i + 1}`;
+      const sceneName = `${CONSTANTS.SCENE_PREFIX}${program.id}${CONSTANTS.ACT_PREFIX}${i + 1}`;
       
       try {
-        // Try to remove existing scene if it exists
-        try {
-          await this.obs.obs.call('RemoveScene', { sceneName });
-        } catch (err) {
-          // Scene doesn't exist, that's fine
-        }
-        
-        // Create new scene
-        await this.obs.obs.call('CreateScene', { sceneName });
+        await this.sceneFactory.createScene(sceneName);
         
         // Add image source if available
         if (act.imagePath) {
-          const inputName = `${sceneName}_Image`;
-          
-          await this.obs.obs.call('CreateInput', {
-            sceneName,
-            inputName,
-            inputKind: 'image_source',
-            inputSettings: {
-              file: act.imagePath
-            }
-          });
-          
-          // Get scene item to set transform
-          const sceneItems = await this.obs.obs.call('GetSceneItemList', { sceneName });
-          if (sceneItems.sceneItems && sceneItems.sceneItems.length > 0) {
-            const itemId = sceneItems.sceneItems[0].sceneItemId;
-            
-            // Set transform to fit/fill
-            await this.obs.obs.call('SetSceneItemTransform', {
-              sceneName,
-              sceneItemId: itemId,
-              sceneItemTransform: {
-                boundsType: config.scene.defaultImageSettings.boundsType,
-                boundsWidth: config.scene.defaultImageSettings.boundsWidth,
-                boundsHeight: config.scene.defaultImageSettings.boundsHeight,
-                alignment: config.scene.defaultImageSettings.alignment
-              }
-            });
-          }
+          await this.sceneFactory.addImageSource(sceneName, act.imagePath);
         }
         
         this.scenes.push({
@@ -113,7 +82,7 @@ class SceneMode extends EventEmitter {
    */
   async start() {
     if (this.scenes.length > 0) {
-      await this.jumpToScene(0);
+      await this._jumpToScene(0);
       this.emit('started', this.currentProgram);
     }
   }
@@ -130,30 +99,24 @@ class SceneMode extends EventEmitter {
    * Next scene
    */
   async next() {
-    if (this.scenes.length === 0) {
-      throw new Error('No scenes loaded');
-    }
-
+    this._validateScenesLoaded();
     const nextIndex = Math.min(this.currentSceneIndex + 1, this.scenes.length - 1);
-    await this.jumpToScene(nextIndex);
+    await this._jumpToScene(nextIndex);
   }
 
   /**
    * Previous scene
    */
   async prev() {
-    if (this.scenes.length === 0) {
-      throw new Error('No scenes loaded');
-    }
-
+    this._validateScenesLoaded();
     const prevIndex = Math.max(this.currentSceneIndex - 1, 0);
-    await this.jumpToScene(prevIndex);
+    await this._jumpToScene(prevIndex);
   }
 
   /**
    * Jump to specific scene
    */
-  async jumpToScene(sceneIndex) {
+  async _jumpToScene(sceneIndex) {
     if (!this.obs || !this.obs.connected) {
       throw new Error('Not connected to OBS');
     }
@@ -163,7 +126,7 @@ class SceneMode extends EventEmitter {
     }
 
     const scene = this.scenes[sceneIndex];
-    await this.obs.obs.call('SetCurrentProgramScene', { sceneName: scene.name });
+    await this.sceneFactory.switchToScene(scene.name);
     this.currentSceneIndex = sceneIndex;
     
     this.emit('scene-changed', sceneIndex);
@@ -174,7 +137,7 @@ class SceneMode extends EventEmitter {
    * Jump to first scene
    */
   async first() {
-    await this.jumpToScene(0);
+    await this._jumpToScene(0);
   }
 
   /**
@@ -182,7 +145,13 @@ class SceneMode extends EventEmitter {
    */
   async last() {
     if (this.scenes.length > 0) {
-      await this.jumpToScene(this.scenes.length - 1);
+      await this._jumpToScene(this.scenes.length - 1);
+    }
+  }
+
+  _validateScenesLoaded() {
+    if (this.scenes.length === 0) {
+      throw new Error('No scenes loaded');
     }
   }
 

@@ -1,4 +1,7 @@
 const EventEmitter = require('events');
+const CONSTANTS = require('../utils/constants');
+const OBSSceneFactory = require('../utils/obs-scene-factory');
+const config = require('../../config.json');
 
 /**
  * RendererMode - Mode A: PPT-as-Renderer
@@ -9,6 +12,7 @@ class RendererMode extends EventEmitter {
     super();
     this.lo = libreOfficeController;
     this.obs = obsController;
+    this.sceneFactory = null;
     this.currentProgram = null;
     this.currentSlideIndex = 0;
   }
@@ -26,7 +30,8 @@ class RendererMode extends EventEmitter {
 
     // Ensure OBS has a capture scene for LibreOffice window
     if (this.obs && this.obs.connected) {
-      await this.setupOBSCapture(program);
+      this.sceneFactory = new OBSSceneFactory(this.obs.obs, config);
+      await this._setupOBSCapture(program);
     }
 
     this.emit('program-loaded', program);
@@ -36,35 +41,12 @@ class RendererMode extends EventEmitter {
   /**
    * Setup OBS to capture LibreOffice presentation window
    */
-  async setupOBSCapture(program) {
-    const sceneName = `SF_${program.id}_Renderer`;
+  async _setupOBSCapture(program) {
+    const sceneName = `${CONSTANTS.SCENE_PREFIX}${program.id}${CONSTANTS.RENDERER_SUFFIX}`;
     
     try {
-      // Try to remove existing scene
-      try {
-        await this.obs.obs.call('RemoveScene', { sceneName });
-      } catch (err) {
-        // Scene doesn't exist, that's fine
-      }
-      
-      // Create capture scene
-      await this.obs.obs.call('CreateScene', { sceneName });
-      
-      // Add window capture source
-      // The actual window will be detected when LibreOffice launches
-      const inputName = `${sceneName}_WindowCapture`;
-      
-      await this.obs.obs.call('CreateInput', {
-        sceneName,
-        inputName,
-        inputKind: 'window_capture', // Platform-specific: window_capture (Win), window_capture (Mac), xcomposite_input (Linux)
-        inputSettings: {
-          // Window will be selected when LibreOffice is running
-          // In a full implementation, you'd detect the window title
-          capture_cursor: false
-        }
-      });
-
+      await this.sceneFactory.createScene(sceneName);
+      await this.sceneFactory.addWindowCapture(sceneName);
       this.emit('obs-capture-ready', sceneName);
     } catch (error) {
       console.error('Error setting up OBS capture:', error);
@@ -86,10 +68,10 @@ class RendererMode extends EventEmitter {
     });
 
     // Switch OBS to capture scene if connected
-    if (this.obs && this.obs.connected) {
-      const sceneName = `SF_${this.currentProgram.id}_Renderer`;
+    if (this.obs && this.obs.connected && this.sceneFactory) {
+      const sceneName = `${CONSTANTS.SCENE_PREFIX}${this.currentProgram.id}${CONSTANTS.RENDERER_SUFFIX}`;
       try {
-        await this.obs.obs.call('SetCurrentProgramScene', { sceneName });
+        await this.sceneFactory.switchToScene(sceneName);
       } catch (error) {
         console.error('Error switching OBS scene:', error);
       }
