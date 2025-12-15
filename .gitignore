@@ -9,6 +9,13 @@ build/
 *.dmg
 *.AppImage
 
+# Fonts (large files - download via script)
+src/renderer/fonts/*.otf
+src/renderer/fonts/*.ttf
+src/renderer/fonts/*.woff
+src/renderer/fonts/*.woff2
+!src/renderer/fonts/*.placeholder
+
 # Environment
 .env
 .env.local

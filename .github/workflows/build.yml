@@ -66,6 +66,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare Gothic fonts
+        shell: pwsh
+        run: |
+          Write-Host "Preparing Gothic fonts for Windows build..."
+          New-Item -Path "src/renderer/fonts" -ItemType Directory -Force
+          Write-Host "Fonts will be downloaded via npm prebuild script"
+
       - name: Download OBS runtime (Full & OBS editions)
         if: matrix.edition == 'Full' || matrix.edition == 'OBS'
         shell: pwsh
@@ -124,6 +131,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Prepare Gothic fonts
+        run: |
+          echo "Preparing Gothic fonts for macOS build..."
+          chmod +x build/scripts/prepare-fonts.sh
+          bash build/scripts/prepare-fonts.sh || echo "Font download skipped (will use system fonts as fallback)"
 
       - name: Download OBS runtime (Full & OBS editions)
         if: matrix.edition == 'Full' || matrix.edition == 'OBS'
@@ -184,6 +197,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y fuse libfuse2
+
+      - name: Prepare Gothic fonts
+        run: |
+          echo "Preparing Gothic fonts for Linux build..."
+          chmod +x build/scripts/prepare-fonts.sh
+          bash build/scripts/prepare-fonts.sh || echo "Font download skipped (will use system fonts as fallback)"
 
       - name: Download OBS runtime (Full & OBS editions)
         if: matrix.edition == 'Full' || matrix.edition == 'OBS'

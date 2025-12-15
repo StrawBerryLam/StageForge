@@ -1,3 +1,29 @@
+/* Font Face Declarations - Gothic Fonts */
+@font-face {
+  font-family: 'Noto Sans JP';
+  src: url('fonts/NotoSansJP-VF.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url('fonts/NotoSansSC-VF.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans TC';
+  src: url('fonts/NotoSansTC-VF.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +31,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* Gothic font stack with language-specific fonts */
+  font-family: 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Yu Gothic', 'Microsoft YaHei', sans-serif;
   background-color: #1a1a1a;
   color: #e0e0e0;
   overflow: hidden;

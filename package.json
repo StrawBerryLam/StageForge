@@ -7,6 +7,8 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare-fonts": "bash build/scripts/prepare-fonts.sh",
+    "prebuild": "npm run prepare-fonts",
     "build": "electron-builder",
     "build:full": "EDITION=Full electron-builder",
     "build:obs": "EDITION=OBS electron-builder",

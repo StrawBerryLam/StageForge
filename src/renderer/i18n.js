@@ -83,6 +83,9 @@ class I18n {
     // Update document title
     document.title = this.t('app.title');
     
+    // Update font based on language
+    this.updateFont();
+    
     // Update all elements with data-i18n attribute
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const key = element.getAttribute('data-i18n');
@@ -99,6 +102,19 @@ class I18n {
     window.dispatchEvent(new CustomEvent('languageChanged', { 
       detail: { language: this.currentLanguage } 
     }));
+  }
+
+  updateFont() {
+    // Set primary font based on language for optimal Gothic rendering
+    const fontMap = {
+      'ja-JP': "'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif",
+      'zh-CN': "'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif",
+      'zh-TW': "'Noto Sans TC', 'Microsoft JhengHei', 'PMingLiU', sans-serif",
+      'en': "'Noto Sans JP', 'Noto Sans SC', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    };
+
+    const fontFamily = fontMap[this.currentLanguage] || fontMap['en'];
+    document.body.style.fontFamily = fontFamily;
   }
 }
 

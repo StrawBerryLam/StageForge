@@ -4,6 +4,16 @@
 
 StageForge uses GitHub Actions for continuous integration and automated builds. The build system supports multiple platforms and editions with security scanning integrated into the pipeline.
 
+## Font Bundling
+
+StageForge bundles **Gothic fonts** for optimal display of CJK (Chinese, Japanese, Korean) text:
+
+- **Noto Sans JP** (Japanese Gothic)
+- **Noto Sans SC** (Simplified Chinese Gothic)
+- **Noto Sans TC** (Traditional Chinese Gothic)
+
+These fonts are automatically downloaded during the build process via the `prepare-fonts` script and are bundled into all editions. The application automatically selects the appropriate font based on the selected language.
+
 ## Build Editions
 
 StageForge is distributed in **4 different editions** per platform:
