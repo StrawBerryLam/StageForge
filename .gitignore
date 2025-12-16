@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+*.exe
+*.dmg
+*.AppImage
+
+# Fonts (large files - download via script)
+src/renderer/fonts/*.otf
+src/renderer/fonts/*.ttf
+src/renderer/fonts/*.woff
+src/renderer/fonts/*.woff2
+!src/renderer/fonts/*.placeholder
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Converted files
+converted/
+slides/
+programs/
+
+# Test files
+test.js

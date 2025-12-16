@@ -1,0 +1,96 @@
+{
+  "app": {
+    "title": "StageForge - Live Event Controller"
+  },
+  "header": {
+    "title": "StageForge",
+    "notConnected": "Not Connected",
+    "connected": "Connected",
+    "connectToOBS": "Connect to OBS",
+    "disconnect": "Disconnect"
+  },
+  "sidebar": {
+    "programs": "Programs",
+    "importPPT": "+ Import PPT",
+    "noProgramsYet": "No programs imported yet",
+    "settings": "Settings",
+    "presentationDisplay": "Presentation Display:",
+    "primaryDisplay": "Primary Display",
+    "libreOfficeStatus": "LibreOffice Status:",
+    "checking": "Checking...",
+    "available": "Available",
+    "notFound": "Not Found"
+  },
+  "controls": {
+    "sceneControl": "Scene Control",
+    "noProgramLoaded": "No program loaded",
+    "start": "Start",
+    "stop": "Stop",
+    "previous": "Previous",
+    "next": "Next",
+    "blackout": "Blackout",
+    "acts": "Acts",
+    "loadProgramToSeeActs": "Load a program to see acts"
+  },
+  "preview": {
+    "preview": "Preview",
+    "noPreviewAvailable": "No preview available",
+    "actDetails": "Act Details",
+    "name": "Name:",
+    "notes": "Notes:"
+  },
+  "statusBar": {
+    "ready": "Ready"
+  },
+  "dialogs": {
+    "connectToOBS": "Connect to OBS",
+    "websocketAddress": "WebSocket Address:",
+    "password": "Password (if required):",
+    "cancel": "Cancel",
+    "connect": "Connect",
+    "selectProgramMode": "Select Program Mode",
+    "chooseHowToUse": "Choose how you want to use this PowerPoint file:",
+    "rendererMode": "Renderer Mode",
+    "rendererFor": "For: Drama, dance, rich animations, videos",
+    "rendererHow": "How: Live playback via LibreOffice",
+    "rendererNeeds": "Needs: LibreOffice available",
+    "sceneMode": "Scene Mode",
+    "sceneFor": "For: Simple backgrounds, static acts",
+    "sceneHow": "How: Slides converted to OBS scenes",
+    "sceneNeeds": "Needs: OBS connection"
+  },
+  "messages": {
+    "connectingToOBS": "Connecting to OBS...",
+    "connectedToOBS": "Connected to OBS successfully",
+    "connectionFailed": "Connection failed: {{error}}",
+    "failedToConnect": "Failed to connect: {{error}}",
+    "disconnectedFromOBS": "Disconnected from OBS",
+    "selectPPTFiles": "Select PPT files to import...",
+    "importingPPTFiles": "Importing PPT files...",
+    "importedPrograms": "Imported {{count}} program(s)",
+    "importedProgramsInMode": "Imported {{count}} program(s) in {{mode}} mode",
+    "importFailed": "Import failed: {{error}}",
+    "loadingProgram": "Loading program...",
+    "programLoaded": "Program loaded ({{mode}} mode)",
+    "failedToLoadProgram": "Failed to load program: {{error}}",
+    "presentationStarted": "Presentation started",
+    "startFailed": "Start failed: {{error}}",
+    "presentationStopped": "Presentation stopped",
+    "stopFailed": "Stop failed: {{error}}",
+    "previousScene": "Previous scene",
+    "nextScene": "Next scene",
+    "jumpedToAct": "Jumped to Act {{act}}",
+    "error": "Error: {{error}}",
+    "blackoutActivated": "Blackout activated",
+    "sceneChanged": "Scene changed: {{scene}}",
+    "displaySet": "Display set to: {{display}}"
+  },
+  "modes": {
+    "renderer": "Renderer",
+    "scene": "Scene"
+  },
+  "units": {
+    "slides": "slides",
+    "acts": "acts"
+  }
+}

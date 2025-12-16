@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StageForge - Live Event Controller</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 data-i18n="header.title">🎭 StageForge</h1>
+      <div class="header-actions">
+        <div class="language-selector">
+          <select id="languageSelect" class="form-input">
+            <option value="en">English</option>
+            <option value="zh-CN">简体中文</option>
+            <option value="zh-TW">繁體中文</option>
+            <option value="ja-JP">日本語</option>
+          </select>
+        </div>
+        <div class="connection-status" id="obsStatus">
+          <span class="status-indicator"></span>
+          <span class="status-text" data-i18n="header.notConnected">Not Connected</span>
+        </div>
+        <button id="connectOBS" class="btn btn-primary" data-i18n="header.connectToOBS">Connect to OBS</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar - Programs -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2 data-i18n="sidebar.programs">Programs</h2>
+          <button id="importPPT" class="btn btn-small" data-i18n="sidebar.importPPT">+ Import PPT</button>
+        </div>
+        <div id="programList" class="program-list">
+          <div class="empty-state" data-i18n="sidebar.noProgramsYet">No programs imported yet</div>
+        </div>
+        <div class="sidebar-footer">
+          <h3 data-i18n="sidebar.settings">Settings</h3>
+          <div class="setting-item">
+            <label for="displaySelect" data-i18n="sidebar.presentationDisplay">Presentation Display:</label>
+            <select id="displaySelect" class="form-input">
+              <option value="0" data-i18n="sidebar.primaryDisplay">Primary Display</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="sidebar.libreOfficeStatus">LibreOffice Status:</label>
+            <span id="loStatus" class="status-text" data-i18n="sidebar.checking">Checking...</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center - Scene Controls -->
+      <main class="center-panel">
+        <div class="control-section">
+          <h2 data-i18n="controls.sceneControl">Scene Control</h2>
+          <div id="currentSceneInfo" class="current-scene-info">
+            <div class="scene-name" data-i18n="controls.noProgramLoaded">No program loaded</div>
+            <div class="scene-number">-</div>
+          </div>
+          
+          <div class="control-buttons">
+            <button id="startBtn" class="btn btn-control" disabled>▶️ <span data-i18n="controls.start">Start</span></button>
+            <button id="prevBtn" class="btn btn-control" disabled>⬅️ <span data-i18n="controls.previous">Previous</span></button>
+            <button id="blackoutBtn" class="btn btn-blackout" disabled>⚫ <span data-i18n="controls.blackout">Blackout</span></button>
+            <button id="nextBtn" class="btn btn-control" disabled>➡️ <span data-i18n="controls.next">Next</span></button>
+            <button id="stopBtn" class="btn btn-control" disabled>⏹️ <span data-i18n="controls.stop">Stop</span></button>
+          </div>
+
+          <div class="act-list-section">
+            <h3 data-i18n="controls.acts">Acts</h3>
+            <div id="actList" class="act-list">
+              <div class="empty-state" data-i18n="controls.loadProgramToSeeActs">Load a program to see acts</div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right - Preview -->
+      <aside class="preview-panel">
+        <h2 data-i18n="preview.preview">Preview</h2>
+        <div id="previewArea" class="preview-area">
+          <div class="empty-state" data-i18n="preview.noPreviewAvailable">No preview available</div>
+        </div>
+        <div id="actDetails" class="act-details">
+          <h3 data-i18n="preview.actDetails">Act Details</h3>
+          <div class="detail-item">
+            <label data-i18n="preview.name">Name:</label>
+            <span id="actName">-</span>
+          </div>
+          <div class="detail-item">
+            <label data-i18n="preview.notes">Notes:</label>
+            <span id="actNotes">-</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <div id="statusMessage" data-i18n="statusBar.ready">Ready</div>
+    </footer>
+  </div>
+
+  <!-- Connection Dialog -->
+  <div id="connectionDialog" class="dialog" style="display: none;">
+    <div class="dialog-content">
+      <h2 data-i18n="dialogs.connectToOBS">Connect to OBS</h2>
+      <form id="connectionForm">
+        <div class="form-group">
+          <label for="obsAddress" data-i18n="dialogs.websocketAddress">WebSocket Address:</label>
+          <input type="text" id="obsAddress" value="ws://127.0.0.1:4455" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="obsPassword" data-i18n="dialogs.password">Password (if required):</label>
+          <input type="password" id="obsPassword" class="form-input">
+        </div>
+        <div class="dialog-actions">
+          <button type="button" id="cancelConnect" class="btn" data-i18n="dialogs.cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-i18n="dialogs.connect">Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mode Selection Dialog -->
+  <div id="modeDialog" class="dialog" style="display: none;">
+    <div class="dialog-content">
+      <h2 data-i18n="dialogs.selectProgramMode">Select Program Mode</h2>
+      <p data-i18n="dialogs.chooseHowToUse">Choose how you want to use this PowerPoint file:</p>
+      <div class="mode-options">
+        <div class="mode-option" data-mode="renderer">
+          <h3>🎭 <span data-i18n="dialogs.rendererMode">Renderer Mode</span></h3>
+          <p><strong data-i18n="dialogs.rendererFor">For:</strong> <span>Drama, dance, rich animations, videos</span></p>
+          <p><strong data-i18n="dialogs.rendererHow">How:</strong> <span>Live playback via LibreOffice</span></p>
+          <p><strong data-i18n="dialogs.rendererNeeds">Needs:</strong> <span>LibreOffice available</span></p>
+        </div>
+        <div class="mode-option" data-mode="scene">
+          <h3>🎬 <span data-i18n="dialogs.sceneMode">Scene Mode</span></h3>
+          <p><strong data-i18n="dialogs.sceneFor">For:</strong> <span>Simple backgrounds, static acts</span></p>
+          <p><strong data-i18n="dialogs.sceneHow">How:</strong> <span>Slides converted to OBS scenes</span></p>
+          <p><strong data-i18n="dialogs.sceneNeeds">Needs:</strong> <span>OBS connection</span></p>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" id="cancelMode" class="btn" data-i18n="dialogs.cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

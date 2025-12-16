@@ -1,0 +1,96 @@
+{
+  "app": {
+    "title": "StageForge - ライブイベントコントローラー"
+  },
+  "header": {
+    "title": "StageForge",
+    "notConnected": "未接続",
+    "connected": "接続済み",
+    "connectToOBS": "OBS に接続",
+    "disconnect": "切断"
+  },
+  "sidebar": {
+    "programs": "プログラム",
+    "importPPT": "+ PPT をインポート",
+    "noProgramsYet": "プログラムがまだインポートされていません",
+    "settings": "設定",
+    "presentationDisplay": "プレゼンテーションディスプレイ：",
+    "primaryDisplay": "プライマリディスプレイ",
+    "libreOfficeStatus": "LibreOffice ステータス：",
+    "checking": "確認中...",
+    "available": "利用可能",
+    "notFound": "見つかりません"
+  },
+  "controls": {
+    "sceneControl": "シーンコントロール",
+    "noProgramLoaded": "プログラムが読み込まれていません",
+    "start": "開始",
+    "stop": "停止",
+    "previous": "前へ",
+    "next": "次へ",
+    "blackout": "ブラックアウト",
+    "acts": "幕",
+    "loadProgramToSeeActs": "プログラムを読み込んで幕を表示"
+  },
+  "preview": {
+    "preview": "プレビュー",
+    "noPreviewAvailable": "プレビューはありません",
+    "actDetails": "幕の詳細",
+    "name": "名前：",
+    "notes": "ノート："
+  },
+  "statusBar": {
+    "ready": "準備完了"
+  },
+  "dialogs": {
+    "connectToOBS": "OBS に接続",
+    "websocketAddress": "WebSocket アドレス：",
+    "password": "パスワード（必要な場合）：",
+    "cancel": "キャンセル",
+    "connect": "接続",
+    "selectProgramMode": "プログラムモードを選択",
+    "chooseHowToUse": "この PowerPoint ファイルの使用方法を選択してください：",
+    "rendererMode": "レンダラーモード",
+    "rendererFor": "用途：ドラマ、ダンス、リッチアニメーション、ビデオ",
+    "rendererHow": "方法：LibreOffice によるライブ再生",
+    "rendererNeeds": "必要：LibreOffice が利用可能",
+    "sceneMode": "シーンモード",
+    "sceneFor": "用途：シンプルな背景、静的な幕",
+    "sceneHow": "方法：スライドを OBS シーンに変換",
+    "sceneNeeds": "必要：OBS 接続"
+  },
+  "messages": {
+    "connectingToOBS": "OBS に接続中...",
+    "connectedToOBS": "OBS に正常に接続しました",
+    "connectionFailed": "接続に失敗しました：{{error}}",
+    "failedToConnect": "接続に失敗しました：{{error}}",
+    "disconnectedFromOBS": "OBS から切断されました",
+    "selectPPTFiles": "インポートする PPT ファイルを選択...",
+    "importingPPTFiles": "PPT ファイルをインポート中...",
+    "importedPrograms": "{{count}} 個のプログラムをインポートしました",
+    "importedProgramsInMode": "{{mode}} モードで {{count}} 個のプログラムをインポートしました",
+    "importFailed": "インポートに失敗しました：{{error}}",
+    "loadingProgram": "プログラムを読み込み中...",
+    "programLoaded": "プログラムが読み込まれました（{{mode}} モード）",
+    "failedToLoadProgram": "プログラムの読み込みに失敗しました：{{error}}",
+    "presentationStarted": "プレゼンテーションが開始されました",
+    "startFailed": "開始に失敗しました：{{error}}",
+    "presentationStopped": "プレゼンテーションが停止しました",
+    "stopFailed": "停止に失敗しました：{{error}}",
+    "previousScene": "前のシーン",
+    "nextScene": "次のシーン",
+    "jumpedToAct": "第 {{act}} 幕にジャンプしました",
+    "error": "エラー：{{error}}",
+    "blackoutActivated": "ブラックアウトが有効化されました",
+    "sceneChanged": "シーンが変更されました：{{scene}}",
+    "displaySet": "ディスプレイが設定されました：{{display}}"
+  },
+  "modes": {
+    "renderer": "レンダラー",
+    "scene": "シーン"
+  },
+  "units": {
+    "slides": "スライド",
+    "acts": "幕"
+  }
+}
