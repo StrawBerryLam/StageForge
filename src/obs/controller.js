@@ -4,6 +4,10 @@ const config = require('../../config.json');
 const CONSTANTS = require('../utils/constants');
 const OBSSceneFactory = require('../utils/obs-scene-factory');
 
+/**
+ * OBSController - Manages OBS WebSocket connection and scene control
+ * Handles scene creation, navigation, and blackout functionality
+ */
 class OBSController extends EventEmitter {
   constructor() {
     super();
@@ -17,6 +21,10 @@ class OBSController extends EventEmitter {
     this._setupEventListeners();
   }
 
+  /**
+   * Setup event listeners for OBS WebSocket
+   * @private
+   */
   _setupEventListeners() {
     this.obs.on('ConnectionClosed', () => {
       this.connected = false;
@@ -28,11 +36,24 @@ class OBSController extends EventEmitter {
     });
   }
 
+  /**
+   * Connect to OBS WebSocket server
+   * @param {Object} connectionConfig - Connection configuration
+   * @param {string} connectionConfig.address - WebSocket address (default: ws://127.0.0.1:4455)
+   * @param {string} connectionConfig.password - WebSocket password (default: empty)
+   * @returns {Promise<boolean>} True if connection successful
+   * @throws {Error} If connection fails or address format is invalid
+   */
   async connect(connectionConfig = {}) {
     const { 
       address = CONSTANTS.OBS.DEFAULT_ADDRESS, 
       password = CONSTANTS.OBS.DEFAULT_PASSWORD 
     } = connectionConfig;
+    
+    // Validate connection parameters
+    if (typeof address !== 'string' || !address.startsWith('ws://') && !address.startsWith('wss://')) {
+      throw new Error('Invalid WebSocket address format');
+    }
     
     try {
       await this.obs.connect(address, password);
@@ -50,6 +71,10 @@ class OBSController extends EventEmitter {
     }
   }
 
+  /**
+   * Disconnect from OBS WebSocket server
+   * @returns {Promise<void>}
+   */
   async disconnect() {
     if (this.connected) {
       await this.obs.disconnect();
@@ -57,6 +82,10 @@ class OBSController extends EventEmitter {
     }
   }
 
+  /**
+   * Get current controller status
+   * @returns {Object} Status object with connection state and scene info
+   */
   getStatus() {
     return {
       connected: this.connected,
@@ -66,15 +95,31 @@ class OBSController extends EventEmitter {
     };
   }
 
+  /**
+   * Ensure blackout scene exists, create if not present
+   * @returns {Promise<void>}
+   * @private
+   */
   async ensureBlackoutScene() {
-    const blackoutSceneName = config?.scene?.blackoutSceneName || CONSTANTS.BLACKOUT_SCENE;
-    
-    if (!await this.sceneFactory.sceneExists(blackoutSceneName)) {
-      await this.sceneFactory.createScene(blackoutSceneName);
-      await this.sceneFactory.addColorSource(blackoutSceneName, CONSTANTS.OBS.BLACK_COLOR, 'Black_Background');
+    try {
+      const blackoutSceneName = config?.scene?.blackoutSceneName || CONSTANTS.BLACKOUT_SCENE;
+      
+      if (!await this.sceneFactory.sceneExists(blackoutSceneName)) {
+        await this.sceneFactory.createScene(blackoutSceneName);
+        await this.sceneFactory.addColorSource(blackoutSceneName, CONSTANTS.OBS.BLACK_COLOR, 'Black_Background');
+      }
+    } catch (error) {
+      console.error('Error ensuring blackout scene:', error);
+      // Don't throw - blackout scene is not critical for connection
     }
   }
 
+  /**
+   * Create OBS scenes for a program's acts
+   * @param {Object} program - Program object with acts array
+   * @returns {Promise<Array>} Array of created scene objects
+   * @throws {Error} If not connected to OBS or scene creation fails
+   */
   async createScenesForProgram(program) {
     if (!this.connected) {
       throw new Error('Not connected to OBS');
@@ -117,18 +162,34 @@ class OBSController extends EventEmitter {
     return this.scenes;
   }
 
+  /**
+   * Switch to next scene in sequence
+   * @returns {Promise<void>}
+   * @throws {Error} If no program loaded
+   */
   async nextScene() {
     this._validateProgramLoaded();
     const nextIndex = Math.min(this.currentSceneIndex + 1, this.scenes.length - 1);
     await this.jumpToScene(nextIndex);
   }
 
+  /**
+   * Switch to previous scene in sequence
+   * @returns {Promise<void>}
+   * @throws {Error} If no program loaded
+   */
   async prevScene() {
     this._validateProgramLoaded();
     const prevIndex = Math.max(this.currentSceneIndex - 1, 0);
     await this.jumpToScene(prevIndex);
   }
 
+  /**
+   * Jump to specific scene by index
+   * @param {number} sceneIndex - Zero-based scene index
+   * @returns {Promise<Object>} Scene object
+   * @throws {Error} If no program loaded or invalid scene index
+   */
   async jumpToScene(sceneIndex) {
     this._validateProgramLoaded();
     this._validateSceneIndex(sceneIndex);
@@ -140,6 +201,11 @@ class OBSController extends EventEmitter {
     return scene;
   }
 
+  /**
+   * Activate blackout scene
+   * @returns {Promise<void>}
+   * @throws {Error} If not connected to OBS
+   */
   async activateBlackout() {
     if (!this.connected) {
       throw new Error('Not connected to OBS');
@@ -150,6 +216,11 @@ class OBSController extends EventEmitter {
     this.currentSceneIndex = -1;
   }
 
+  /**
+   * Get currently active scene
+   * @returns {Promise<Object>} Current scene info with name and index
+   * @throws {Error} If not connected to OBS
+   */
   async getCurrentScene() {
     if (!this.connected) {
       throw new Error('Not connected to OBS');
@@ -162,12 +233,23 @@ class OBSController extends EventEmitter {
     };
   }
 
+  /**
+   * Validate that a program is loaded and controller is connected
+   * @private
+   * @throws {Error} If no program loaded or not connected
+   */
   _validateProgramLoaded() {
     if (!this.connected || this.scenes.length === 0) {
       throw new Error('No program loaded or not connected');
     }
   }
 
+  /**
+   * Validate scene index is within valid range
+   * @private
+   * @param {number} sceneIndex - Scene index to validate
+   * @throws {Error} If scene index is out of range
+   */
   _validateSceneIndex(sceneIndex) {
     if (sceneIndex < 0 || sceneIndex >= this.scenes.length) {
       throw new Error('Invalid scene index');

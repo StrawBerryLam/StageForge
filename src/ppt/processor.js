@@ -30,7 +30,22 @@ class PPTProcessor {
 
   async processFile(filePath, options = {}) {
     try {
-      const fileName = path.basename(filePath, path.extname(filePath));
+      // Validate and sanitize input path
+      if (!filePath || typeof filePath !== 'string') {
+        throw new Error('Invalid file path');
+      }
+      
+      // Resolve absolute path to prevent directory traversal
+      const resolvedPath = path.resolve(filePath);
+      
+      // Check if file exists and is accessible
+      try {
+        await fs.access(resolvedPath);
+      } catch (error) {
+        throw new Error(`File not accessible: ${resolvedPath}`);
+      }
+      
+      const fileName = path.basename(resolvedPath, path.extname(resolvedPath));
       const programId = this._sanitizeName(fileName);
       const programDir = path.join(this.programsDir, programId);
       const slideDir = path.join(this.slidesDir, programId);
@@ -44,8 +59,8 @@ class PPTProcessor {
       ]);
 
       // Copy PPT file to program directory
-      const targetPath = path.join(programDir, path.basename(filePath));
-      await fs.copyFile(filePath, targetPath);
+      const targetPath = path.join(programDir, path.basename(resolvedPath));
+      await fs.copyFile(resolvedPath, targetPath);
 
       // Determine mode: default to 'renderer' if not specified
       const mode = options.mode || CONSTANTS.MODES.RENDERER;
@@ -364,7 +379,12 @@ class PPTProcessor {
   }
 
   _sanitizeName(name) {
-    return name.replace(/[^a-zA-Z0-9_-]/g, '_');
+    // Remove or replace invalid characters for filesystem
+    // Allow only alphanumeric, underscore, hyphen, and spaces
+    return name
+      .replace(/[^a-zA-Z0-9_\s-]/g, '_')
+      .replace(/\s+/g, '_')
+      .substring(0, 100); // Limit length to prevent issues
   }
 }
 

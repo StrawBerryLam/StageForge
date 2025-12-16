@@ -20,8 +20,9 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
     },
     title: 'StageForge - Live Event Controller'
   });
@@ -35,6 +36,10 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    // Cleanup mode controllers
+    if (currentMode) {
+      currentMode = null;
+    }
   });
 }
 
@@ -76,7 +81,19 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  // Cleanup resources before quitting
+  try {
+    if (libreOfficeController && libreOfficeController.isRunning) {
+      await libreOfficeController.stop();
+    }
+    if (obsController && obsController.connected) {
+      await obsController.disconnect();
+    }
+  } catch (error) {
+    console.error('Error during cleanup:', error);
+  }
+  
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -87,6 +104,11 @@ app.on('window-all-closed', () => {
 // OBS Connection
 ipcMain.handle('obs:connect', async (event, config) => {
   try {
+    // Validate config
+    if (config && typeof config !== 'object') {
+      return { success: false, error: 'Invalid configuration object' };
+    }
+    
     await obsController.connect(config);
     return { success: true };
   } catch (error) {
@@ -110,8 +132,20 @@ ipcMain.handle('obs:status', async () => {
 // PPT Processing
 ipcMain.handle('ppt:import', async (event, filePaths, options = {}) => {
   try {
+    // Validate inputs
+    if (!Array.isArray(filePaths) || filePaths.length === 0) {
+      return { success: false, error: 'Invalid file paths' };
+    }
+    
+    if (options && typeof options !== 'object') {
+      return { success: false, error: 'Invalid options object' };
+    }
+    
     const results = [];
     for (const filePath of filePaths) {
+      if (typeof filePath !== 'string') {
+        continue; // Skip invalid paths
+      }
       const result = await pptProcessor.processFile(filePath, options);
       results.push(result);
     }
@@ -138,6 +172,11 @@ ipcMain.handle('ppt:select', async () => {
 // Program Management
 ipcMain.handle('program:load', async (event, programId) => {
   try {
+    // Validate programId
+    if (typeof programId !== 'string' || programId.trim() === '') {
+      return { success: false, error: 'Invalid program ID' };
+    }
+    
     const program = await pptProcessor.loadProgram(programId);
     if (program) {
       currentProgram = program;
@@ -197,6 +236,11 @@ ipcMain.handle('scene:prev', async () => {
 
 ipcMain.handle('scene:jump', async (event, sceneIndex) => {
   try {
+    // Validate sceneIndex
+    if (typeof sceneIndex !== 'number' || sceneIndex < 0 || !Number.isInteger(sceneIndex)) {
+      return { success: false, error: 'Invalid scene index' };
+    }
+    
     if (currentMode && currentMode.jumpToScene) {
       await currentMode.jumpToScene(sceneIndex);
     } else {
@@ -210,6 +254,11 @@ ipcMain.handle('scene:jump', async (event, sceneIndex) => {
 
 ipcMain.handle('scene:start', async (event, options) => {
   try {
+    // Validate options
+    if (options && typeof options !== 'object') {
+      return { success: false, error: 'Invalid options object' };
+    }
+    
     if (currentMode) {
       await currentMode.start(options);
     } else {
@@ -273,6 +322,11 @@ ipcMain.handle('display:list', async () => {
 
 ipcMain.handle('display:set', async (event, displayIndex) => {
   try {
+    // Validate displayIndex
+    if (typeof displayIndex !== 'number' || displayIndex < 0 || !Number.isInteger(displayIndex)) {
+      return { success: false, error: 'Invalid display index' };
+    }
+    
     libreOfficeController.setDisplay(displayIndex);
     return { success: true };
   } catch (error) {
