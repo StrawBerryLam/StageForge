@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const path = require('path');
-const fs = require('fs').promises;
 const OBSController = require('./obs/controller');
 const PPTProcessor = require('./ppt/processor');
 const LibreOfficeController = require('./libreoffice/controller');
