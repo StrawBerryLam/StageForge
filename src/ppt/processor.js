@@ -442,10 +442,10 @@ class PPTProcessor {
    */
   _sanitizeName(name) {
     // Remove or replace invalid characters for filesystem
-    // Allow only alphanumeric, underscore, hyphen, and spaces
+    // Allow only alphanumeric, underscore, and hyphen
     return name
-      .replace(/[^a-zA-Z0-9_\s-]/g, '_')
-      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .replace(/_+/g, '_') // Normalize consecutive underscores
       .substring(0, 100); // Limit length to prevent issues
   }
 }

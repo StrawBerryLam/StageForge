@@ -51,7 +51,7 @@ class OBSController extends EventEmitter {
     } = connectionConfig;
     
     // Validate connection parameters
-    if (typeof address !== 'string' || !address.startsWith('ws://') && !address.startsWith('wss://')) {
+    if (typeof address !== 'string' || (!address.startsWith('ws://') && !address.startsWith('wss://'))) {
       throw new Error('Invalid WebSocket address format');
     }
     
