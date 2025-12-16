@@ -6,6 +6,10 @@ const CONSTANTS = require('../utils/constants');
 
 const execFilePromise = promisify(execFile);
 
+/**
+ * PPTProcessor - Handles PowerPoint file processing and program management
+ * Supports both renderer mode (direct PPT playback) and scene mode (slide extraction)
+ */
 class PPTProcessor {
   constructor() {
     this.dataDir = path.join(__dirname, '../../', CONSTANTS.PATHS.DATA);
@@ -15,6 +19,11 @@ class PPTProcessor {
     this._ensureDirectories();
   }
 
+  /**
+   * Ensure all required directories exist
+   * @private
+   * @returns {Promise<void>}
+   */
   async _ensureDirectories() {
     try {
       await Promise.all([
@@ -28,6 +37,14 @@ class PPTProcessor {
     }
   }
 
+  /**
+   * Process a PowerPoint file and create a program
+   * @param {string} filePath - Path to PPT/PPTX file
+   * @param {Object} options - Processing options
+   * @param {string} options.mode - Processing mode ('renderer' or 'scene')
+   * @returns {Promise<Object>} Program object with metadata
+   * @throws {Error} If file is invalid or processing fails
+   */
   async processFile(filePath, options = {}) {
     try {
       // Validate and sanitize input path
@@ -94,8 +111,11 @@ class PPTProcessor {
   }
 
   /**
-   * Get slide count from PPT file
+   * Get slide count from PowerPoint file
    * Fully implemented using ZIP parsing for PPTX files
+   * @private
+   * @param {string} pptPath - Path to PPT file
+   * @returns {Promise<number>} Number of slides in presentation
    */
   async _getSlideCount(pptPath) {
     try {
@@ -135,6 +155,12 @@ class PPTProcessor {
     }
   }
   
+  /**
+   * Get slide count using LibreOffice
+   * @private
+   * @param {string} pptPath - Path to PPT file
+   * @returns {Promise<number>} Number of slides
+   */
   async _getSlideCountViaLibreOffice(pptPath) {
     // This would require LibreOffice UNO API or similar
     // For now, return a default count
@@ -142,6 +168,14 @@ class PPTProcessor {
     return 5;
   }
 
+  /**
+   * Extract slide images and metadata from PowerPoint
+   * @private
+   * @param {string} pptPath - Path to PPT file
+   * @param {string} slideDir - Directory for slide images
+   * @param {string} videoDir - Directory for extracted videos
+   * @returns {Promise<Array>} Array of act objects with image paths
+   */
   async _extractActs(pptPath, slideDir, videoDir) {
     // This is a simplified implementation
     // In a real implementation, you would:
@@ -212,6 +246,13 @@ class PPTProcessor {
     return acts;
   }
 
+  /**
+   * Convert PowerPoint slides to images using LibreOffice
+   * @private
+   * @param {string} pptPath - Path to PPT file
+   * @param {string} outputDir - Output directory for images
+   * @returns {Promise<boolean>} True if conversion successful
+   */
   async _convertWithLibreOffice(pptPath, outputDir) {
     // Try to convert using LibreOffice if available
     try {
@@ -231,6 +272,11 @@ class PPTProcessor {
     }
   }
 
+  /**
+   * Get platform-specific LibreOffice executable path
+   * @private
+   * @returns {string} Path to LibreOffice executable
+   */
   _getLibreOfficePath() {
     return process.platform === 'win32' 
       ? 'C:\\Program Files\\LibreOffice\\program\\soffice.exe'
@@ -339,6 +385,12 @@ class PPTProcessor {
     }
   }
 
+  /**
+   * Load a program by ID
+   * @param {string} programId - Program identifier
+   * @returns {Promise<Object>} Program object with full metadata
+   * @throws {Error} If program not found or cannot be loaded
+   */
   async loadProgram(programId) {
     try {
       const metadataPath = path.join(this.programsDir, programId, 'metadata.json');
@@ -349,6 +401,10 @@ class PPTProcessor {
     }
   }
 
+  /**
+   * List all available programs
+   * @returns {Promise<Array>} Array of program summary objects
+   */
   async listPrograms() {
     try {
       const entries = await fs.readdir(this.programsDir, { withFileTypes: true });
@@ -378,6 +434,12 @@ class PPTProcessor {
     }
   }
 
+  /**
+   * Sanitize name for use as filesystem directory name
+   * @private
+   * @param {string} name - Name to sanitize
+   * @returns {string} Sanitized name safe for filesystem use
+   */
   _sanitizeName(name) {
     // Remove or replace invalid characters for filesystem
     // Allow only alphanumeric, underscore, hyphen, and spaces
