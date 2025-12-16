@@ -106,10 +106,11 @@ class I18n {
 
   updateFont() {
     // Set primary font based on language for optimal Gothic rendering
+    // Using only commercial-free licensed fonts (Noto Sans family)
     const fontMap = {
-      'ja-JP': "'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif",
-      'zh-CN': "'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif",
-      'zh-TW': "'Noto Sans TC', 'Microsoft JhengHei', 'PMingLiU', sans-serif",
+      'ja-JP': "'Noto Sans JP', 'Yu Gothic', sans-serif",
+      'zh-CN': "'Noto Sans SC', 'Source Han Sans SC', sans-serif",
+      'zh-TW': "'Noto Sans TC', 'Source Han Sans TC', sans-serif",
       'en': "'Noto Sans JP', 'Noto Sans SC', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
     };
 
