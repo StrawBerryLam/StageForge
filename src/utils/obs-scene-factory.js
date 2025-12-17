@@ -1,18 +1,25 @@
+const CONSTANTS = require('./constants');
+
 /**
  * OBS Scene Factory - Utility for creating OBS scenes
  * Eliminates code duplication between OBSController and SceneMode
+ * Provides a consistent API for scene and source management
  */
-
-const CONSTANTS = require('./constants');
-
 class OBSSceneFactory {
+  /**
+   * Create an OBS Scene Factory
+   * @param {OBSWebSocket} obsClient - OBS WebSocket client instance
+   * @param {Object} config - Configuration object for scene settings
+   */
   constructor(obsClient, config = {}) {
     this.obs = obsClient;
     this.config = config;
   }
 
   /**
-   * Create or recreate a scene
+   * Create or recreate a scene (removes existing if present)
+   * @param {string} sceneName - Name of the scene to create
+   * @returns {Promise<string>} Created scene name
    */
   async createScene(sceneName) {
     // Remove existing scene if it exists
@@ -29,6 +36,10 @@ class OBSSceneFactory {
 
   /**
    * Add image source to scene with proper transform
+   * @param {string} sceneName - Scene to add image to
+   * @param {string} imagePath - Path to image file
+   * @param {string} [inputName] - Optional custom input name
+   * @returns {Promise<string>} Created input name
    */
   async addImageSource(sceneName, imagePath, inputName = null) {
     const inputNameFinal = inputName || `${sceneName}_Image`;
@@ -54,7 +65,10 @@ class OBSSceneFactory {
   }
 
   /**
-   * Set image transform to fit/fill canvas
+   * Set image transform to fit/fill canvas with proper scaling
+   * @param {string} sceneName - Scene containing the item
+   * @param {number} sceneItemId - ID of the scene item to transform
+   * @returns {Promise<void>}
    */
   async setImageTransform(sceneName, sceneItemId) {
     const settings = this.config?.scene?.defaultImageSettings || {};
@@ -72,7 +86,10 @@ class OBSSceneFactory {
   }
 
   /**
-   * Add window capture source
+   * Add window capture source for LibreOffice presentations
+   * @param {string} sceneName - Scene to add capture to
+   * @param {string} [inputName] - Optional custom input name
+   * @returns {Promise<string>} Created input name
    */
   async addWindowCapture(sceneName, inputName = null) {
     const inputNameFinal = inputName || `${sceneName}_WindowCapture`;
@@ -90,7 +107,11 @@ class OBSSceneFactory {
   }
 
   /**
-   * Add color source (for blackout)
+   * Add color source (typically for blackout scenes)
+   * @param {string} sceneName - Scene to add color to
+   * @param {number} [color] - Color value (default: black)
+   * @param {string} [inputName] - Optional custom input name
+   * @returns {Promise<string>} Created input name
    */
   async addColorSource(sceneName, color = CONSTANTS.OBS.BLACK_COLOR, inputName = null) {
     const inputNameFinal = inputName || `${sceneName}_Color`;
@@ -114,7 +135,11 @@ class OBSSceneFactory {
   }
 
   /**
-   * Add video source (media source)
+   * Add video source (media source) to scene
+   * @param {string} sceneName - Scene to add video to
+   * @param {string} videoPath - Path to video file
+   * @param {string} [inputName] - Optional custom input name
+   * @returns {Promise<string>} Created input name
    */
   async addVideoSource(sceneName, videoPath, inputName = null) {
     const inputNameFinal = inputName || `${sceneName}_Video`;
@@ -153,6 +178,10 @@ class OBSSceneFactory {
 
   /**
    * Create a subscene for video playback
+   * @param {string} parentSceneName - Parent scene name
+   * @param {string} videoPath - Path to video file
+   * @param {number} [subsceneIndex] - Subscene index (default: 0)
+   * @returns {Promise<string>} Created subscene name
    */
   async createVideoSubscene(parentSceneName, videoPath, subsceneIndex = 0) {
     const subsceneName = `${parentSceneName}_Video${subsceneIndex + 1}`;
@@ -167,14 +196,18 @@ class OBSSceneFactory {
   }
 
   /**
-   * Switch to a scene
+   * Switch to a scene (make it the current program scene)
+   * @param {string} sceneName - Scene to switch to
+   * @returns {Promise<void>}
    */
   async switchToScene(sceneName) {
     await this.obs.call('SetCurrentProgramScene', { sceneName });
   }
 
   /**
-   * Check if scene exists
+   * Check if a scene exists
+   * @param {string} sceneName - Scene name to check
+   * @returns {Promise<boolean>} True if scene exists
    */
   async sceneExists(sceneName) {
     try {

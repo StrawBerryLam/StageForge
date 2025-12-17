@@ -6,8 +6,14 @@ const config = require('../../config.json');
 /**
  * RendererMode - Mode A: PPT-as-Renderer
  * Plays PPT live via LibreOffice, OBS captures the presentation window
+ * This mode is ideal for presentations with animations, transitions, and embedded media
  */
 class RendererMode extends EventEmitter {
+  /**
+   * Create a RendererMode controller
+   * @param {LibreOfficeController} libreOfficeController - LibreOffice controller instance
+   * @param {OBSController} obsController - OBS controller instance
+   */
   constructor(libreOfficeController, obsController) {
     super();
     this.lo = libreOfficeController;
@@ -18,7 +24,10 @@ class RendererMode extends EventEmitter {
   }
 
   /**
-   * Load and start a program in renderer mode
+   * Load and prepare a program for renderer mode
+   * @param {Object} program - Program object with file path and metadata
+   * @returns {Promise<Object>} Loaded program object
+   * @throws {Error} If no program provided
    */
   async loadProgram(program) {
     if (!program) {
@@ -40,6 +49,10 @@ class RendererMode extends EventEmitter {
 
   /**
    * Setup OBS to capture LibreOffice presentation window
+   * @private
+   * @param {Object} program - Program object
+   * @returns {Promise<void>}
+   * @throws {Error} If OBS scene creation fails
    */
   async _setupOBSCapture(program) {
     const sceneName = `${CONSTANTS.SCENE_PREFIX}${program.id}${CONSTANTS.RENDERER_SUFFIX}`;
@@ -55,7 +68,11 @@ class RendererMode extends EventEmitter {
   }
 
   /**
-   * Start presentation
+   * Start presentation playback
+   * @param {Object} options - Start options
+   * @param {number} options.display - Display index for presentation (default: 0)
+   * @returns {Promise<void>}
+   * @throws {Error} If no program loaded
    */
   async start(options = {}) {
     if (!this.currentProgram) {
@@ -81,7 +98,8 @@ class RendererMode extends EventEmitter {
   }
 
   /**
-   * Stop presentation
+   * Stop presentation and close LibreOffice
+   * @returns {Promise<void>}
    */
   async stop() {
     await this.lo.stop();
@@ -90,7 +108,8 @@ class RendererMode extends EventEmitter {
   }
 
   /**
-   * Next slide
+   * Advance to next slide
+   * @returns {Promise<void>}
    */
   async next() {
     await this.lo.nextSlide();
@@ -99,7 +118,8 @@ class RendererMode extends EventEmitter {
   }
 
   /**
-   * Previous slide
+   * Go to previous slide
+   * @returns {Promise<void>}
    */
   async prev() {
     if (this.currentSlideIndex > 0) {
@@ -111,6 +131,7 @@ class RendererMode extends EventEmitter {
 
   /**
    * Jump to first slide
+   * @returns {Promise<void>}
    */
   async first() {
     await this.lo.firstSlide();
@@ -120,6 +141,7 @@ class RendererMode extends EventEmitter {
 
   /**
    * Jump to last slide
+   * @returns {Promise<void>}
    */
   async last() {
     await this.lo.lastSlide();
@@ -130,7 +152,8 @@ class RendererMode extends EventEmitter {
   }
 
   /**
-   * Get current status
+   * Get current status of renderer mode
+   * @returns {Object} Status object with mode info, slide count, and playback state
    */
   getStatus() {
     return {

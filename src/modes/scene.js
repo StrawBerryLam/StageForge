@@ -6,8 +6,13 @@ const config = require('../../config.json');
 /**
  * SceneMode - Mode B: PPT-to-Scenes
  * Converts PPT slides to images and creates OBS scenes
+ * This mode is ideal for simple slide shows without animations
  */
 class SceneMode extends EventEmitter {
+  /**
+   * Create a SceneMode controller
+   * @param {OBSController} obsController - OBS controller instance
+   */
   constructor(obsController) {
     super();
     this.obs = obsController;
@@ -19,6 +24,10 @@ class SceneMode extends EventEmitter {
 
   /**
    * Load and setup a program in scene mode
+   * Creates OBS scenes from program's slide images
+   * @param {Object} program - Program object with acts array
+   * @returns {Promise<Object>} Loaded program object
+   * @throws {Error} If no program provided
    */
   async loadProgram(program) {
     if (!program) {
@@ -41,6 +50,10 @@ class SceneMode extends EventEmitter {
 
   /**
    * Create OBS scenes from program slides/acts
+   * @private
+   * @param {Object} program - Program object with acts array
+   * @returns {Promise<void>}
+   * @throws {Error} If not connected to OBS or scene creation fails
    */
   async _createScenes(program) {
     if (!this.obs || !this.obs.connected) {
@@ -92,6 +105,7 @@ class SceneMode extends EventEmitter {
 
   /**
    * Start presentation (jump to first scene)
+   * @returns {Promise<void>}
    */
   async start() {
     if (this.scenes.length > 0) {
@@ -101,7 +115,8 @@ class SceneMode extends EventEmitter {
   }
 
   /**
-   * Stop presentation (no-op for scene mode, but included for API consistency)
+   * Stop presentation (no-op for scene mode, included for API consistency)
+   * @returns {Promise<void>}
    */
   async stop() {
     this.currentSceneIndex = -1;
@@ -109,7 +124,9 @@ class SceneMode extends EventEmitter {
   }
 
   /**
-   * Next scene
+   * Advance to next scene
+   * @returns {Promise<void>}
+   * @throws {Error} If no scenes loaded
    */
   async next() {
     this._validateScenesLoaded();
@@ -118,7 +135,9 @@ class SceneMode extends EventEmitter {
   }
 
   /**
-   * Previous scene
+   * Go to previous scene
+   * @returns {Promise<void>}
+   * @throws {Error} If no scenes loaded
    */
   async prev() {
     this._validateScenesLoaded();
@@ -127,7 +146,11 @@ class SceneMode extends EventEmitter {
   }
 
   /**
-   * Jump to specific scene
+   * Jump to specific scene by index
+   * @private
+   * @param {number} sceneIndex - Zero-based scene index
+   * @returns {Promise<Object>} Scene object
+   * @throws {Error} If not connected to OBS or invalid scene index
    */
   async _jumpToScene(sceneIndex) {
     if (!this.obs || !this.obs.connected) {
@@ -148,6 +171,7 @@ class SceneMode extends EventEmitter {
 
   /**
    * Jump to first scene
+   * @returns {Promise<void>}
    */
   async first() {
     await this._jumpToScene(0);
@@ -155,6 +179,7 @@ class SceneMode extends EventEmitter {
 
   /**
    * Jump to last scene
+   * @returns {Promise<void>}
    */
   async last() {
     if (this.scenes.length > 0) {
@@ -162,6 +187,11 @@ class SceneMode extends EventEmitter {
     }
   }
 
+  /**
+   * Validate that scenes are loaded
+   * @private
+   * @throws {Error} If no scenes loaded
+   */
   _validateScenesLoaded() {
     if (this.scenes.length === 0) {
       throw new Error('No scenes loaded');
@@ -169,7 +199,8 @@ class SceneMode extends EventEmitter {
   }
 
   /**
-   * Get current status
+   * Get current status of scene mode
+   * @returns {Object} Status object with mode info, scene count, and scene list
    */
   getStatus() {
     return {

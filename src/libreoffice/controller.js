@@ -150,7 +150,17 @@ class LibreOfficeController extends EventEmitter {
       throw new Error('LibreOffice is not running');
     }
     
-    const keyToSend = CONSTANTS.KEYS[key.toUpperCase()] || key;
+    // Map key aliases to actual key names
+    const keyMap = {
+      'next': 'Right',
+      'prev': 'Left',
+      'first': 'Home',
+      'last': 'End',
+      'exit': 'Escape',
+      'fullscreen': 'F5'
+    };
+    
+    const keyToSend = keyMap[key.toLowerCase()] || CONSTANTS.KEYS[key.toUpperCase()] || key;
     console.log(`Sending key: ${keyToSend} to LibreOffice`);
     
     // Platform-specific keyboard automation
