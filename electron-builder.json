@@ -62,7 +62,7 @@
   },
   "linux": {
     "target": ["AppImage", "tar.gz"],
-    "icon": "build/icons",
+    "icon": "build/icon.svg",
     "category": "AudioVideo",
     "artifactName": "${productName}-${env.EDITION}-${os}-${arch}.${ext}"
   },

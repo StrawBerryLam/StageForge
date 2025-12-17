@@ -8,7 +8,6 @@ build/*
 !build/icon.svg
 !build/icon.ico
 !build/icon.icns
-!build/icons/
 !build/entitlements.mac.plist
 *.exe
 *.dmg
