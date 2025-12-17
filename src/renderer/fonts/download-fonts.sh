@@ -11,7 +11,7 @@ TEMP_DIR=$(mktemp -d)
 
 # Download Noto Sans CJK
 echo "Downloading Noto Sans CJK..."
-curl -L "https://github.com/notofonts/noto-cjk/releases/download/${NOTO_VERSION}/07_NotoSansCJK-OTF-VF.zip" -o "${TEMP_DIR}/noto-sans-cjk.zip"
+curl -L "https://github.com/notofonts/noto-cjk/releases/download/${NOTO_VERSION}/01_NotoSansCJK-OTF-VF.zip" -o "${TEMP_DIR}/noto-sans-cjk.zip"
 
 # Extract fonts
 echo "Extracting fonts..."
