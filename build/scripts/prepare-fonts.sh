@@ -16,10 +16,8 @@ if [ ! -f "${FONTS_SCRIPT}" ]; then
     exit 1
 fi
 
-# Make the font download script executable
+# Make the font download script executable and execute it
 chmod +x "${FONTS_SCRIPT}"
-
-# Execute the font download script
-bash "${FONTS_SCRIPT}"
+"${FONTS_SCRIPT}"
 
 echo "Font preparation complete!"
