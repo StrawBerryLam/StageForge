@@ -3,7 +3,8 @@ node_modules/
 
 # Build artifacts
 dist/
-build/
+build/*
+!build/scripts/
 *.exe
 *.dmg
 *.AppImage
