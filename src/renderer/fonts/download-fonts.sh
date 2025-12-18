@@ -7,6 +7,8 @@ set -e  # Exit on error
 # Configuration
 NOTO_VERSION="Sans2.004"
 MIN_EXPECTED_SIZE=100000000  # 100MB minimum (actual file is ~247MB)
+SIZE_GIB=1073741824  # 1 GiB in bytes
+SIZE_MIB=1048576     # 1 MiB in bytes
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FONTS_DIR="${SCRIPT_DIR}"
 DOWNLOAD_URL="https://github.com/notofonts/noto-cjk/releases/download/${NOTO_VERSION}/01_NotoSansCJK-OTF-VF.zip"
@@ -26,17 +28,17 @@ if ! curl -L --fail --silent --show-error "${DOWNLOAD_URL}" -o "${TEMP_DIR}/noto
 fi
 
 # Validate download (check file size - should be around 247MB)
-FILE_SIZE=$(wc -c < "${TEMP_DIR}/noto-sans-cjk.zip" | tr -d ' ')
+FILE_SIZE=$(wc -c < "${TEMP_DIR}/noto-sans-cjk.zip")
 if [ "${FILE_SIZE}" -lt "${MIN_EXPECTED_SIZE}" ]; then
     echo "Error: Downloaded file is too small (${FILE_SIZE} bytes). Download may have failed." >&2
     exit 1
 fi
 
 # Format file size for display
-if [ "${FILE_SIZE}" -ge 1073741824 ]; then
-    SIZE_DISPLAY="$((FILE_SIZE / 1073741824))GiB"
-elif [ "${FILE_SIZE}" -ge 1048576 ]; then
-    SIZE_DISPLAY="$((FILE_SIZE / 1048576))MiB"
+if [ "${FILE_SIZE}" -ge "${SIZE_GIB}" ]; then
+    SIZE_DISPLAY="$((FILE_SIZE / SIZE_GIB))GiB"
+elif [ "${FILE_SIZE}" -ge "${SIZE_MIB}" ]; then
+    SIZE_DISPLAY="$((FILE_SIZE / SIZE_MIB))MiB"
 else
     SIZE_DISPLAY="${FILE_SIZE} bytes"
 fi
