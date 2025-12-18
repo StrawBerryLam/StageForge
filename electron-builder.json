@@ -1,7 +1,7 @@
 {
   "appId": "com.stageforge.app",
   "productName": "StageForge",
-  "copyright": "Copyright © 2025",
+  "copyright": "Copyright © 2025 StageForge Contributors",
   "directories": {
     "output": "dist",
     "buildResources": "build"
@@ -29,7 +29,9 @@
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "StageForge"
+    "shortcutName": "StageForge",
+    "installerIcon": "build/icon.ico",
+    "uninstallerIcon": "build/icon.ico"
   },
   "mac": {
     "target": [
@@ -47,6 +49,8 @@
     "entitlementsInherit": "build/entitlements.mac.plist"
   },
   "dmg": {
+    "title": "${productName} ${version}",
+    "icon": "build/icon.icns",
     "contents": [
       {
         "x": 130,
