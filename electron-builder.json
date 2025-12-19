@@ -1,7 +1,7 @@
 {
   "appId": "com.stageforge.app",
   "productName": "StageForge",
-  "copyright": "Copyright © 2025",
+  "copyright": "Copyright © 2025 StageForge Contributors",
   "directories": {
     "output": "dist",
     "buildResources": "build"
@@ -22,14 +22,16 @@
   "win": {
     "target": ["nsis"],
     "icon": "build/icon.ico",
-    "artifactName": "${productName}-${edition}-${os}-${arch}.${ext}"
+    "artifactName": "${productName}-${env.EDITION}-${os}-${arch}.${ext}"
   },
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "shortcutName": "StageForge"
+    "shortcutName": "StageForge",
+    "installerIcon": "build/icon.ico",
+    "uninstallerIcon": "build/icon.ico"
   },
   "mac": {
     "target": [
@@ -40,13 +42,15 @@
     ],
     "icon": "build/icon.icns",
     "category": "public.app-category.productivity",
-    "artifactName": "${productName}-${edition}-${os}-${arch}.${ext}",
+    "artifactName": "${productName}-${env.EDITION}-${os}-${arch}.${ext}",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
     "entitlements": "build/entitlements.mac.plist",
     "entitlementsInherit": "build/entitlements.mac.plist"
   },
   "dmg": {
+    "title": "${productName} ${version}",
+    "icon": "build/icon.icns",
     "contents": [
       {
         "x": 130,
@@ -62,9 +66,9 @@
   },
   "linux": {
     "target": ["AppImage", "tar.gz"],
-    "icon": "build/icons",
+    "icon": "build/icon.svg",
     "category": "AudioVideo",
-    "artifactName": "${productName}-${edition}-${os}-${arch}.${ext}"
+    "artifactName": "${productName}-${env.EDITION}-${os}-${arch}.${ext}"
   },
   "appImage": {
     "license": "LICENSE"

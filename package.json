@@ -3,6 +3,24 @@
   "version": "1.0.0",
   "description": "A stage controller for live event control using OBS",
   "main": "src/main.js",
+  "author": "StageForge Contributors",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StrawBerryLam/StageForge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/StrawBerryLam/StageForge/issues"
+  },
+  "homepage": "https://github.com/StrawBerryLam/StageForge#readme",
+  "keywords": [
+    "electron",
+    "obs",
+    "stage-control",
+    "presentation",
+    "live-events",
+    "controller"
+  ],
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
@@ -16,22 +34,14 @@
     "build:core": "EDITION=Core electron-builder",
     "build:all": "npm run build:full && npm run build:obs && npm run build:libreoffice && npm run build:core"
   },
-  "keywords": [
-    "electron",
-    "obs",
-    "stage-control",
-    "presentation"
-  ],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "adm-zip": "^0.5.10",
-    "electron": "^39.2.7",
     "i18next": "^25.7.2",
     "i18next-electron-fs-backend": "^3.0.3",
     "obs-websocket-js": "^5.0.7"
   },
   "devDependencies": {
+    "electron": "^39.2.7",
     "electron-builder": "^26.0.12"
   }
 }

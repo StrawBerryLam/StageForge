@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#2563eb"/>
+  
+  <!-- Stage platform -->
+  <rect x="96" y="340" width="320" height="20" fill="#1e3a8a" rx="4"/>
+  <rect x="80" y="360" width="352" height="8" fill="#1e293b" rx="2"/>
+  
+  <!-- Stage curtain left -->
+  <path d="M 120 140 Q 130 180, 120 220 Q 110 260, 120 300 Q 130 320, 120 340 L 96 340 L 96 140 Z" 
+        fill="#dc2626" opacity="0.9"/>
+  <path d="M 96 140 Q 106 180, 96 220 Q 86 260, 96 300 Q 106 320, 96 340 L 72 340 L 72 140 Z" 
+        fill="#991b1b" opacity="0.8"/>
+  
+  <!-- Stage curtain right -->
+  <path d="M 392 140 Q 382 180, 392 220 Q 402 260, 392 300 Q 382 320, 392 340 L 416 340 L 416 140 Z" 
+        fill="#dc2626" opacity="0.9"/>
+  <path d="M 416 140 Q 406 180, 416 220 Q 426 260, 416 300 Q 406 320, 416 340 L 440 340 L 440 140 Z" 
+        fill="#991b1b" opacity="0.8"/>
+  
+  <!-- Spotlight beams -->
+  <path d="M 180 120 L 200 280 L 160 280 Z" fill="#fef3c7" opacity="0.3"/>
+  <path d="M 332 120 L 352 280 L 312 280 Z" fill="#fef3c7" opacity="0.3"/>
+  
+  <!-- Control console/mixer in center -->
+  <rect x="200" y="200" width="112" height="80" fill="#1e293b" rx="6"/>
+  <rect x="206" y="206" width="100" height="68" fill="#0f172a" rx="4"/>
+  
+  <!-- Faders/sliders -->
+  <rect x="220" y="220" width="8" height="40" fill="#64748b" rx="2"/>
+  <rect x="220" y="220" width="8" height="20" fill="#22c55e" rx="2"/>
+  
+  <rect x="244" y="220" width="8" height="40" fill="#64748b" rx="2"/>
+  <rect x="244" y="230" width="8" height="20" fill="#22c55e" rx="2"/>
+  
+  <rect x="268" y="220" width="8" height="40" fill="#64748b" rx="2"/>
+  <rect x="268" y="225" width="8" height="20" fill="#22c55e" rx="2"/>
+  
+  <!-- Stage lights -->
+  <circle cx="180" cy="120" r="12" fill="#fbbf24"/>
+  <circle cx="180" cy="120" r="8" fill="#fef3c7"/>
+  <circle cx="332" cy="120" r="12" fill="#fbbf24"/>
+  <circle cx="332" cy="120" r="8" fill="#fef3c7"/>
+  
+  <!-- Small indicator lights on console -->
+  <circle cx="224" cy="252" r="3" fill="#ef4444"/>
+  <circle cx="248" cy="252" r="3" fill="#22c55e"/>
+  <circle cx="272" cy="252" r="3" fill="#3b82f6"/>
+  
+  <!-- Brand text "SF" -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="72" font-weight="bold" 
+        fill="#ffffff" text-anchor="middle">SF</text>
+</svg>
