@@ -168,8 +168,9 @@ jobs:
 
       - name: Configure build environment
         run: |
-          # Set environment variables for code signing
-          if [ -n "${{ secrets.MACOS_CERTIFICATE }}" ]; then
+          # Set environment variables for code signing based on certificate availability
+          # The import step only runs if certificate exists, so check for the file
+          if [ -f "$RUNNER_TEMP/build_certificate.p12" ]; then
             echo "CSC_LINK=$RUNNER_TEMP/build_certificate.p12" >> $GITHUB_ENV
             echo "CSC_KEY_PASSWORD=${{ secrets.MACOS_CERTIFICATE_PWD }}" >> $GITHUB_ENV
             echo "Code signing is enabled"
@@ -213,8 +214,9 @@ jobs:
           ls -la /Volumes/ || true
           
           # Try to detach any product volumes if they exist
-          # Escape the product name for safe use in regex (escape regex special chars)
-          ESCAPED_NAME=$(printf '%s\n' "$PRODUCT_NAME" | sed 's/[]\/$*.^[]/\\&/g')
+          # Escape the product name for safe use in regex
+          # Put ] at beginning of character class to match it literally
+          ESCAPED_NAME=$(printf '%s\n' "$PRODUCT_NAME" | sed 's/[][\/$*.^]/\\&/g')
           
           # Match volumes that start with the product name (may have version numbers)
           # Use find and filter with grep to properly handle volume names with spaces
