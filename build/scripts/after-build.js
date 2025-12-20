@@ -56,7 +56,7 @@ exports.default = async function(context) {
       
       // Try to detach the volume using spawn to prevent command injection
       try {
-        await execCommand('hdiutil', ['detach', volumePath, '-quiet', '-force']);
+        await execCommand('hdiutil', ['detach', '-quiet', '-force', volumePath]);
         console.log(`Successfully detached ${volumePath}`);
       } catch (detachError) {
         console.log(`Could not detach ${volumePath}: ${detachError.message}`);

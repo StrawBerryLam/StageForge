@@ -206,12 +206,15 @@ jobs:
         if: always()
         run: |
           echo "Checking for and cleaning up any mounted DMG volumes..."
+          # Get product name from electron-builder config
+          PRODUCT_NAME=$(node -e "console.log(require('./electron-builder.json').productName)")
+          
           # List all mounted volumes
           ls -la /Volumes/ || true
           
-          # Try to detach any StageForge volumes if they exist
+          # Try to detach any product volumes if they exist
           # Use find to properly handle volume names with spaces
-          find /Volumes -maxdepth 1 -name "StageForge*" -type d 2>/dev/null | while read -r volume; do
+          find /Volumes -maxdepth 1 -name "${PRODUCT_NAME}*" -type d 2>/dev/null | while read -r volume; do
             if [ -d "$volume" ]; then
               echo "Found mounted volume: $volume"
               hdiutil detach "$volume" -quiet -force || echo "Could not detach $volume (may already be detached)"
