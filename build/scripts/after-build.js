@@ -5,7 +5,6 @@
 
 const { spawn } = require('child_process');
 const { existsSync } = require('fs');
-const path = require('path');
 
 /**
  * Execute a command safely using spawn
