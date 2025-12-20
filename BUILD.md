@@ -244,13 +244,47 @@ strategy:
 
 ## Code Signing (macOS)
 
-### Requirements
+### Overview
 
-Set repository secrets:
-- `APPLE_ID`: Apple Developer ID
-- `APPLE_ID_PASSWORD`: App-specific password
-- `CSC_LINK`: Developer certificate (base64)
-- `CSC_KEY_PASSWORD`: Certificate password
+The macOS build process supports optional code signing for applications that will be distributed outside the Mac App Store. Code signing is **optional** - the build will complete successfully without it, but the resulting DMG will not be signed.
+
+### Requirements (Optional)
+
+To enable code signing, set the following repository secrets:
+
+- `MACOS_CERTIFICATE`: Base64-encoded .p12 certificate file containing your "Developer ID Application" certificate
+- `MACOS_CERTIFICATE_PWD`: Password for the .p12 certificate file
+
+### Setting Up Code Signing
+
+1. **Export Certificate from Keychain:**
+   ```bash
+   # Export your Developer ID Application certificate as .p12
+   # Use Keychain Access > My Certificates > Right-click > Export
+   ```
+
+2. **Convert to Base64:**
+   ```bash
+   base64 -i certificate.p12 | pbcopy
+   ```
+
+3. **Add to GitHub Secrets:**
+   - Go to repository Settings > Secrets and variables > Actions
+   - Add `MACOS_CERTIFICATE` with the base64 content
+   - Add `MACOS_CERTIFICATE_PWD` with your certificate password
+
+### Build Behavior
+
+- **With Certificates:** Build imports certificate, signs the application, and creates a signed DMG
+- **Without Certificates:** Build skips signing and creates an unsigned DMG (still functional for development/testing)
+
+### DMG Volume Safety
+
+The build system includes safety checks to prevent failures when DMG volumes are not properly mounted:
+
+- Checks if volumes exist before attempting to detach them
+- Uses `hdiutil detach -force` to handle edge cases
+- Runs cleanup steps even if the build fails (`if: always()`)
 
 ### Entitlements
 
@@ -287,11 +321,24 @@ Located at `build/entitlements.mac.plist`:
 
 ### macOS Signing Issues
 
-**Symptom:** DMG not notarized  
+**Symptom:** DMG not signed or build fails with certificate errors  
 **Solution:**
-1. Verify secrets are set correctly
+1. Verify secrets are set correctly (optional for signing)
 2. Check certificate expiration
 3. Review entitlements.mac.plist
+4. Note: Build will succeed without certificates (unsigned DMG)
+
+### macOS DMG Volume Detach Errors
+
+**Symptom:** Build fails with "hdiutil detach" errors or "resource busy" messages  
+**Solution:**
+1. The build system now includes automatic cleanup
+2. Volumes are checked before detach attempts
+3. If issues persist, check for:
+   - Finder windows open to the volume
+   - Background processes holding the volume
+   - Insufficient disk space
+4. The `if: always()` cleanup step should handle most cases
 
 ## Contributing
 

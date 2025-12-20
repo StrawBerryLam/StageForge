@@ -46,7 +46,8 @@
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
     "entitlements": "build/entitlements.mac.plist",
-    "entitlementsInherit": "build/entitlements.mac.plist"
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "identity": null
   },
   "dmg": {
     "title": "${productName} ${version}",
@@ -73,5 +74,6 @@
   "appImage": {
     "license": "LICENSE"
   },
+  "afterAllArtifactBuild": "build/scripts/after-build.js",
   "publish": null
 }

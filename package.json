@@ -35,8 +35,8 @@
     "build:all": "npm run build:full && npm run build:obs && npm run build:libreoffice && npm run build:core"
   },
   "dependencies": {
-    "adm-zip": "^0.5.10",
-    "i18next": "^25.7.2",
+    "adm-zip": "^0.5.16",
+    "i18next": "^25.7.3",
     "i18next-electron-fs-backend": "^3.0.3",
     "obs-websocket-js": "^5.0.7"
   },
