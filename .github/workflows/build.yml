@@ -138,6 +138,46 @@ jobs:
           chmod +x build/scripts/prepare-fonts.sh
           bash build/scripts/prepare-fonts.sh || echo "Font download skipped (will use system fonts as fallback)"
 
+      - name: Import Code Signing Certificate
+        if: ${{ secrets.MACOS_CERTIFICATE != '' && secrets.MACOS_CERTIFICATE_PWD != '' }}
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          # Import certificate from secrets
+          echo "$MACOS_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$MACOS_CERTIFICATE_PWD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # Verify certificate
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          
+          echo "Code signing certificate imported successfully"
+
+      - name: Configure build environment
+        run: |
+          # Set environment variables for code signing
+          if [ -n "${{ secrets.MACOS_CERTIFICATE }}" ]; then
+            echo "CSC_LINK=$RUNNER_TEMP/build_certificate.p12" >> $GITHUB_ENV
+            echo "CSC_KEY_PASSWORD=${{ secrets.MACOS_CERTIFICATE_PWD }}" >> $GITHUB_ENV
+            echo "Code signing is enabled"
+          else
+            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> $GITHUB_ENV
+            echo "Code signing is disabled (no certificate provided)"
+          fi
+
       - name: Download OBS runtime (Full & OBS editions)
         if: matrix.edition == 'Full' || matrix.edition == 'OBS'
         run: |
@@ -161,6 +201,23 @@ jobs:
         env:
           EDITION: ${{ matrix.edition }}
         run: npm run build
+
+      - name: Cleanup mounted volumes
+        if: always()
+        run: |
+          echo "Checking for and cleaning up any mounted DMG volumes..."
+          # List all mounted volumes
+          ls -la /Volumes/ || true
+          
+          # Try to detach any StageForge volumes if they exist
+          for volume in /Volumes/StageForge*; do
+            if [ -d "$volume" ]; then
+              echo "Found mounted volume: $volume"
+              hdiutil detach "$volume" -quiet -force || echo "Could not detach $volume (may already be detached)"
+            fi
+          done
+          
+          echo "Cleanup completed."
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
