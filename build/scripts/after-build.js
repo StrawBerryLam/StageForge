@@ -43,7 +43,8 @@ exports.default = async function(context) {
     
     // Validate that volumeName doesn't contain dangerous characters
     // Only allow alphanumeric, spaces, dots, and hyphens
-    if (!/^[a-zA-Z0-9\s\.\-]+$/.test(volumeName)) {
+    // Dot is escaped, hyphen is at the end of character class
+    if (!/^[a-zA-Z0-9\s.-]+$/.test(volumeName)) {
       console.log(`Skipping volume detachment - volume name contains unsafe characters: ${volumeName}`);
       return;
     }
