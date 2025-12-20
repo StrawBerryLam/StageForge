@@ -1,5 +1,6 @@
 name: Build and Release
 
+# Workflow for building and releasing StageForge application packages
 on:
   push:
     tags:
