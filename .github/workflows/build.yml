@@ -213,10 +213,11 @@ jobs:
           ls -la /Volumes/ || true
           
           # Try to detach any product volumes if they exist
-          # Escape the product name for safe use in pattern
-          ESCAPED_NAME=$(printf '%s\n' "$PRODUCT_NAME" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          # Escape the product name for safe use in regex (escape regex special chars)
+          ESCAPED_NAME=$(printf '%s\n' "$PRODUCT_NAME" | sed 's/[]\/$*.^[]/\\&/g')
           
-          # Use find to properly handle volume names with spaces
+          # Match volumes that start with the product name (may have version numbers)
+          # Use find and filter with grep to properly handle volume names with spaces
           find /Volumes -maxdepth 1 -type d 2>/dev/null | grep -E "^/Volumes/${ESCAPED_NAME}" | while read -r volume; do
             if [ -d "$volume" ]; then
               echo "Found mounted volume: $volume"
