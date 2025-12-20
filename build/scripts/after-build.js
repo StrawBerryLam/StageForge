@@ -3,9 +3,26 @@
  * Safely handles DMG volume detachment on macOS
  */
 
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 const { existsSync } = require('fs');
 const path = require('path');
+
+/**
+ * Execute a command safely using spawn
+ */
+function execCommand(command, args) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args, { stdio: 'inherit' });
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command failed with exit code ${code}`));
+      }
+    });
+    proc.on('error', reject);
+  });
+}
 
 exports.default = async function(context) {
   const { platform } = context;
@@ -33,16 +50,13 @@ exports.default = async function(context) {
     
     console.log(`Checking for mounted volume: ${volumePath}`);
     
-    // Check if the volume is actually mounted using fs instead of shell
+    // Check if the volume is actually mounted using fs
     if (existsSync(volumePath)) {
       console.log(`Volume ${volumePath} is mounted, attempting to detach...`);
       
-      // Try to detach the volume - use execSync with explicit args array to prevent injection
+      // Try to detach the volume using spawn to prevent command injection
       try {
-        execSync(`hdiutil detach "${volumePath}" -quiet -force`, { 
-          stdio: 'inherit',
-          shell: '/bin/sh'
-        });
+        await execCommand('hdiutil', ['detach', volumePath, '-quiet', '-force']);
         console.log(`Successfully detached ${volumePath}`);
       } catch (detachError) {
         console.log(`Could not detach ${volumePath}: ${detachError.message}`);
