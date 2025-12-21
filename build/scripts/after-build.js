@@ -50,31 +50,39 @@ exports.default = async function(context) {
       productName = eb.productName || pkg.productName || pkg.name || 'StageForge';
       version = pkg.version || '0.0.0';
     }
-    const volumeName = `${productName} ${version}`;
-    const volumePath = `/Volumes/${volumeName}`;
     
-    // Validate that volumeName doesn't contain dangerous characters
-    // Only allow alphanumeric, spaces, dots, and hyphens (hyphen at end of character class)
-    if (!/^[a-zA-Z0-9\s.-]+$/.test(volumeName)) {
-      console.log(`Skipping volume detachment - volume name contains unsafe characters: ${volumeName}`);
-      return;
-    }
-    
-    console.log(`Checking for mounted volume: ${volumePath}`);
-    
-    // Check if the volume is actually mounted using fs
-    if (existsSync(volumePath)) {
-      console.log(`Volume ${volumePath} is mounted, attempting to detach...`);
+    const volumeNames = [
+      `${productName} ${version}`,
+      `${productName} ${version} x64`,
+      `${productName} ${version} arm64`
+    ];
+
+    for (const volumeName of volumeNames) {
+      const volumePath = `/Volumes/${volumeName}`;
       
-      // Try to detach the volume using spawn to prevent command injection
-      try {
-        await execCommand('hdiutil', ['detach', '-quiet', '-force', volumePath]);
-        console.log(`Successfully detached ${volumePath}`);
-      } catch (detachError) {
-        console.log(`Could not detach ${volumePath}: ${detachError.message}`);
+      // Validate that volumeName doesn't contain dangerous characters
+      // Only allow alphanumeric, spaces, dots, and hyphens (hyphen at end of character class)
+      if (!/^[a-zA-Z0-9\s.-]+$/.test(volumeName)) {
+        console.log(`Skipping volume detachment - volume name contains unsafe characters: ${volumeName}`);
+        continue;
       }
-    } else {
-      console.log(`Volume ${volumePath} is not mounted.`);
+      
+      console.log(`Checking for mounted volume: ${volumePath}`);
+      
+      // Check if the volume is actually mounted using fs
+      if (existsSync(volumePath)) {
+        console.log(`Volume ${volumePath} is mounted, attempting to detach...`);
+        
+        // Try to detach the volume using spawn to prevent command injection
+        try {
+          await execCommand('hdiutil', ['detach', '-quiet', '-force', volumePath]);
+          console.log(`Successfully detached ${volumePath}`);
+        } catch (detachError) {
+          console.log(`Could not detach ${volumePath}: ${detachError.message}`);
+        }
+      } else {
+        console.log(`Volume ${volumePath} is not mounted.`);
+      }
     }
   } catch (error) {
     console.error('Error in after-build hook:', error.message);
