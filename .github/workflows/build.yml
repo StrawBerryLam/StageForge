@@ -139,11 +139,16 @@ jobs:
           bash build/scripts/prepare-fonts.sh || echo "Font download skipped (will use system fonts as fallback)"
 
       - name: Import Code Signing Certificate
-        if: ${{ secrets.MACOS_CERTIFICATE != '' && secrets.MACOS_CERTIFICATE_PWD != '' }}
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         run: |
+          # Skip if secrets are not provided
+          if [ -z "$MACOS_CERTIFICATE" ] || [ -z "$MACOS_CERTIFICATE_PWD" ]; then
+            echo "No macOS certificate provided; skipping import."
+            exit 0
+          fi
+
           # Create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
