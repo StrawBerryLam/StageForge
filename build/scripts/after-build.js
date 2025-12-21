@@ -24,10 +24,12 @@ function execCommand(command, args) {
 }
 
 exports.default = async function(context) {
-  const { platform } = context;
-  
-  // Only run on macOS
-  if (platform.name !== 'mac') {
+  // Determine platform name robustly and skip if not macOS
+  const platformName = (context && context.platform && context.platform.name)
+    || (context && context.electronPlatformName)
+    || process.platform;
+
+  if (platformName !== 'mac' && platformName !== 'darwin') {
     return;
   }
 
@@ -35,8 +37,19 @@ exports.default = async function(context) {
   
   // Check for and safely detach any StageForge DMG volumes
   try {
-    const productName = context.packager.appInfo.productName;
-    const version = context.packager.appInfo.version;
+    // Resolve product name and version with safe fallbacks
+    let productName;
+    let version;
+
+    if (context && context.packager && context.packager.appInfo) {
+      productName = context.packager.appInfo.productName;
+      version = context.packager.appInfo.version;
+    } else {
+      const eb = require('../../electron-builder.json');
+      const pkg = require('../../package.json');
+      productName = eb.productName || pkg.productName || pkg.name || 'StageForge';
+      version = pkg.version || '0.0.0';
+    }
     const volumeName = `${productName} ${version}`;
     const volumePath = `/Volumes/${volumeName}`;
     
