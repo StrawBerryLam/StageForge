@@ -74,6 +74,25 @@ app.whenReady().then(() => {
     }
   });
 
+  // Setup OBS event listeners
+  obsController.on('connected', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('obs:connected');
+    }
+  });
+  
+  obsController.on('disconnected', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('obs:disconnected');
+    }
+  });
+  
+  obsController.on('scene-changed', (sceneName) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('obs:scene-changed', sceneName);
+    }
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -345,21 +364,4 @@ ipcMain.handle('libreoffice:status', async () => {
   }
 });
 
-// Status updates from OBS
-obsController.on('connected', () => {
-  if (mainWindow) {
-    mainWindow.webContents.send('obs:connected');
-  }
-});
 
-obsController.on('disconnected', () => {
-  if (mainWindow) {
-    mainWindow.webContents.send('obs:disconnected');
-  }
-});
-
-obsController.on('scene-changed', (sceneName) => {
-  if (mainWindow) {
-    mainWindow.webContents.send('obs:scene-changed', sceneName);
-  }
-});
