@@ -1,6 +1,5 @@
 name: Build and Release
 
-# Workflow for building and releasing StageForge application packages
 on:
   push:
     tags:
@@ -140,17 +139,11 @@ jobs:
           bash build/scripts/prepare-fonts.sh || echo "Font download skipped (will use system fonts as fallback)"
 
       - name: Import Code Signing Certificate
+        if: ${{ secrets.MACOS_CERTIFICATE != '' && secrets.MACOS_CERTIFICATE_PWD != '' }}
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         run: |
-          # Check if certificate secrets are available
-          if [ -z "$MACOS_CERTIFICATE" ] || [ -z "$MACOS_CERTIFICATE_PWD" ]; then
-            echo "Code signing certificate not available (secrets not set)"
-            echo "Build will continue without code signing"
-            exit 0
-          fi
-          
           # Create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
